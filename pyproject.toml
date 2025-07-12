@@ -7,7 +7,7 @@ where = ["src/"]
 
 [project]
 name = "twlog"
-version = "0.50.0"
+version = "0.51.0"
 authors = [
   { name="Twinkle Computing", email="twinkle@twinkle.work" },
 ]
@@ -15,13 +15,11 @@ description = "Compatibility for Logging with Easy and Simple"
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
-    "Programming Language :: Python :: 3,9",
-    "Programming Language :: Python :: 3,11",
     "Operating System :: OS Independent",
 ]
-license = "GPL-3.0-or-later AND LicenseRef-AntiPsychiatricTerror-1.0-or-later"
+license = "GPL-3.0-or-later AND LicenseRef-ResistPsychiatricTerror-1.0-or-later"
 license-files = ["LICEN[CS]E*", "LICENSE.GPLv3", "LICENSE.RPTv1"]
 
 [project.urls]
-Homepage = "https://github.com/ScrapWareORG/LiteLogger"
-Issues = "https://github.com/ScrapWareORG/LiteLogger"
+Homepage = "https://github.com/ScrapWareORG/twlog"
+Issues = "https://github.com/ScrapWareORG/twlog"

@@ -127,7 +127,7 @@ class root():
     # Promise for Console
     def logging(self, datefmt: str = None, msgfmt: str = None, message: str = None, level: int = 20, title: str = None):
         # Title Setting
-        title = str(title) if title is not None else uc(self.name)
+        title = str(title) if title is not None else self.name.upper()
         level = level if level is not None else self.level
         # numpy.ndarray, torch.Tensor, Jax, ...
         message = message if isinstance(message, str) else self.msg_disassembly(message)

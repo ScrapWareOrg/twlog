@@ -107,7 +107,7 @@ if __name__ == "__main__":
 
 #=====================================================================
 # ALL - Make it directly accessible from the top level of the package
-__all__ = ["FileHandler"]
+__all__ = ["FileHandler", "BufferedFileHandler"]
 
 """ __DATA__
 
