@@ -1,9 +1,3 @@
------
-
-### 最終的な`README.md`の調整案
-
-上記のご意見を反映した、最終的な`README.md`の調整案を提示します。
-
 ````markdown
 # twlog
 
@@ -313,6 +307,3 @@ We welcome contributions to `twlog`\! If you find a bug, have a feature request,
 ## License
 
 `twlog` is licensed under the GPLv3 AND LicenseRef-RPTv1.
-
-```
-```
