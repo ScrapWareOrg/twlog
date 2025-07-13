@@ -3,10 +3,12 @@
 ######################################################################
 # LIBS
 
-from twlog.util.Code import *
+import twlog
+import twlog.util
+
+from twlog import *
 from twlog.util.ANSIColor import ansi
-from twlog.util import *
-from twlog import getLogger
+from twlog.util.Code import *
 from twlog.Filters import Filter
 from twlog.Formatters import Formatter, LogRecord
 from twlog.Handlers import Handler
@@ -17,7 +19,7 @@ from twlog.Handlers.ANSI import ANSIHandler
 
 # Define True Logger
 #twlog.util.Code.export_global_loglevel(__name__)
-logger = getLogger(__name__)
+logger = twlog.getLogger(__name__)
 
 logger.test()
 

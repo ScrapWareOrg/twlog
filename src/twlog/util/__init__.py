@@ -176,7 +176,7 @@ if __name__ == "__main__":
 
 #=====================================================================
 # ALL - Make it directly accessible from the top level of the package
-__all__ = ["psolo", "popts", "priny", "pixie", "prain", "paint", "plume", "prank", "prown", "prism", "popts", "psolo"]
+__all__ = ["psolo", "popts", "priny", "pixie", "prain", "paint", "plume", "prank", "prown", "prism"]
 
 """ __DATA__
 

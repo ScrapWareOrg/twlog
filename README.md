@@ -1,4 +1,3 @@
-````markdown
 # twlog
 
 A lightweight and colorful logging utility for Python, designed to enhance your console output for debugging and general information. `twlog` provides an intuitive interface similar to Python's standard `logging` module, with a focus on immediate, human-readable, and visually engaging console messages.
@@ -183,6 +182,8 @@ To run the test, simply execute:
 python -m twlog
 ```
 
+![sample](https://raw.githubusercontent.com/ScrapWareOrg/twlog/refs/heads/main/sample1.png)
+
 This will output a series of test messages demonstrating various logging levels and fun print functions.
 
 -----
@@ -244,55 +245,55 @@ Sets the threshold for the logger. Messages with a level lower than this will be
 
 These functions are designed for visually distinct console output, leveraging ANSI escape codes and emojis for enhanced readability and fun during development/debugging. They are directly importable from the `twlog` package.
 
-  * `twlog.popts(b: Any, *t: Any)`
+  * `popts(b: Any, *t: Any)`
 
       * **Description**: Prints options as key-value pairs, with a bold key.
-      * **Usage**: `twlog.popts("Options", "verbose=True", "debug_mode=False")`
+      * **Usage**: `popts("Options", "verbose=True", "debug_mode=False")`
 
-  * `twlog.psolo(m: Any)`
+  * `psolo(m: Any)`
 
       * **Description**: Prints a single value without including a line break at the end. Useful for building progress indicators on a single line.
-      * **Usage**: `twlog.psolo("Progress: "); for i in range(5): twlog.psolo(f"{i*20}% "); time.sleep(0.1)`
+      * **Usage**: `psolo("Progress: "); for i in range(5): psolo(f"{i*20}% "); time.sleep(0.1)`
 
-  * `twlog.priny(b: Any, *t: Any)`
+  * `priny(b: Any, *t: Any)`
 
       * **Description**: Prints a free-style message with a leading star emoji (`🌠`), blue bold title, and a customizable structure.
-      * **Usage**: `twlog.priny("System Boot", "Checking dependencies", "Loading modules")`
+      * **Usage**: `priny("System Boot", "Checking dependencies", "Loading modules")`
 
-  * `twlog.pixie(b: Any, *t: Any)`
+  * `pixie(b: Any, *t: Any)`
 
       * **Description**: Prints a magic-like message with fairy emojis (`🧚✨✨✨`), cyan color, and a blinking effect. Ideal for highlighting magical or important events.
-      * **Usage**: `twlog.pixie("Success!", "Model training complete!", "Accuracy: 99.1%")`
+      * **Usage**: `pixie("Success!", "Model training complete!", "Accuracy: 99.1%")`
 
-  * `twlog.prain(b: Any, *t: Any)`
+  * `prain(b: Any, *t: Any)`
 
       * **Description**: Prints a rainbow-themed message with a rainbow emoji (`🌈`) and yellow bold title.
-      * **Usage**: `twlog.prain("Result", "Training Loss: 0.005", "Validation Loss: 0.007")`
+      * **Usage**: `prain("Result", "Training Loss: 0.005", "Validation Loss: 0.007")`
 
-  * `twlog.paint(b: Any, *t: Any)`
+  * `paint(b: Any, *t: Any)`
 
       * **Description**: Prints a message with paint brush emojis (`🎨🖌️`) and magenta bold title, for colorful output. Uses a brush stroke (`🖌️`) as a separator between `*t` arguments.
-      * **Usage**: `twlog.paint("Color Palette", "Primary: Red", "Secondary: Green", "Tertiary: Blue")`
+      * **Usage**: `paint("Color Palette", "Primary: Red", "Secondary: Green", "Tertiary: Blue")`
 
-  * `twlog.plume(b: Any, *t: Any)`
+  * `plume(b: Any, *t: Any)`
 
       * **Description**: Prints a light, flowing message with wind emojis (`🌬️`) and white bold title. The body text is italic and cyan.
-      * **Usage**: `twlog.plume("Stream", "Reading data stream from sensor.", "Filtering noise...")`
+      * **Usage**: `plume("Stream", "Reading data stream from sensor.", "Filtering noise...")`
 
-  * `twlog.prank(b: Any, *t: Any)`
+  * `prank(b: Any, *t: Any)`
 
       * **Description**: Prints a playful message with clown emojis (`🤡`), green and red bold text. Useful for lighthearted debugging or temporary messages.
-      * **Usage**: `twlog.prank("Heads Up!", "This feature is still experimental.", "Use with caution!")`
+      * **Usage**: `prank("Heads Up!", "This feature is still experimental.", "Use with caution!")`
 
-  * `twlog.prown(b: Any, *t: Any)`
+  * `prown(b: Any, *t: Any)`
 
       * **Description**: Prints a message with a shrimp emoji (`🍤`) and red bold title.
-      * **Usage**: `twlog.prown("Fatal Error", "Database connection lost!", "Please restart the server.")`
+      * **Usage**: `prown("Fatal Error", "Database connection lost!", "Please restart the server.")`
 
-  * `twlog.prism(b: Any, *t: Any)`
+  * `prism(b: Any, *t: Any)`
 
       * **Description**: Prints a multi-line, structured message with a disco ball emoji (`🪩`) and cyan bold title. Ideal for displaying summaries or structured data that benefits from line breaks. Each `*t` argument appears on a new line, indented.
-      * **Usage**: `twlog.prism("Summary Report", "Total Users: 5000", "New Signups: 150", "Active Sessions: 1200")`
+      * **Usage**: `prism("Summary Report", "Total Users: 5000", "New Signups: 150", "Active Sessions: 1200")`
 
     *Note: All `b` and `t` arguments are automatically converted to strings internally before being printed.*
 

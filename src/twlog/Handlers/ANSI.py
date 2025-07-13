@@ -6,8 +6,8 @@ import shutil
 ######################################################################
 # LIBS
 
-from twlog.util.Code import *
 from twlog.util.ANSIColor import ansi
+from twlog.util.Code import *
 from twlog.Formatters import Formatter, LogRecord
 from twlog.Handlers import Handler
 

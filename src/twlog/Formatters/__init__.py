@@ -19,8 +19,8 @@ from datetime import datetime
 ######################################################################
 # LIBS
 
-from twlog.util.Code import *
 from twlog.util.ANSIColor import ansi
+from twlog.util.Code import *
 
 ######################################################################
 # Classes - Formatter

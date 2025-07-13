@@ -19,8 +19,11 @@ from datetime import datetime
 ######################################################################
 # LIBS
 
-from twlog.util.Code import *
+import twlog.util
+
+from twlog.util import psolo, popts, priny, pixie, prain, paint, plume, prank, prown, prism
 from twlog.util.ANSIColor import ansi
+from twlog.util.Code import *
 from twlog.Filters import Filter
 from twlog.Formatters import Formatter, LogRecord
 from twlog.Handlers import Handler
@@ -279,7 +282,7 @@ def RootLogger(*args, force=False, **kwargs):
 root = root()
 
 ######################################################################
-# ログレベル関数互換 (logging.info など)
+# Log Level Compatibility
 
 def debug(*args, **kwargs):
     root.debug(*args, **kwargs)
@@ -310,7 +313,9 @@ if __name__ == "__main__":
 
 #=====================================================================
 # ALL - Make it directly accessible from the top level of the package
-__all__ = ["getLogger", "logging", "debug", "info", "warn", "warning", "error", "critical", "notice", "issue", "matter", "exception"]
+__all__ = ["getLogger", "logging", "debug", "info", "warn", "warning", "error", "critical", "notice", "issue", "matter", "exception",
+    "psolo", "popts", "priny", "pixie", "prain", "paint", "plume", "prank", "prown", "prism",
+    ]
 
 """ __DATA__
 
