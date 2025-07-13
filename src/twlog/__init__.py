@@ -28,6 +28,8 @@ from twlog.Filters import Filter
 from twlog.Formatters import Formatter, LogRecord
 from twlog.Handlers import Handler
 from twlog.Handlers.ANSI import ANSIHandler
+from twlog.Handlers.File import FileHandler, BufferedFileHandler
+from twlog.Handlers.Stream import StreamHandler
 
 ######################################################################
 # REGISTRY
@@ -181,6 +183,13 @@ class logging(root, ansi):
     def __init__(self, name=None, level=INFO, propagate=False, parent=None, disabled=False, handlers=[], *args, **kwargs) -> None:
         super(logging, self).__init__(level=level, propagate=propagate, parent=parent, disabled=False)
         self.name = str(name) if name is not None else __name__
+        # for Priny {ansi.start}...m
+        self.first            = "🌠 \x1b[94;1m"
+        # ?{ansi.reset}
+        self.title_structure  = ":\x1b[0m"
+        # e.g. -> {ansi.start}{ansi.fore_light_red};{ansi.text_on_bold}m->{ansi.reset}
+        self.middle_structure = ""
+        self.split            = " "
     # Safe Update
     def safedate(self, src: dict, dest: dict) -> dict:
         for key in dest.keys():
@@ -196,16 +205,6 @@ class logging(root, ansi):
                     # Update
                     safedate(src=c.__dict__, dest=LOG_LEVEL)
     #========================================
-    # Pixie: 🧚✨✨✨✨✨
-    def pixie(self, b, *t):
-        b = str(b)
-        a = [""] * len(t) 
-        for i in range(len(t)):
-            a[i] = str(t[i])
-        m = f"🧚✨✨✨ {ansi.start}{ansi.fore_light_cyan};{ansi.text_on_blink};{ansi.text_on_bold}m{b} {ansi.reset}✨✨ "
-        m += ", ".join(a)
-        print(f"{m}")
-    #========================================
     # Print for as options pair values. You guys not yet see EBI 🍤🍤🍤🍤
     def popts(self, b, *t):
         b = str(b)
@@ -220,6 +219,94 @@ class logging(root, ansi):
     def psolo(self, *t):
         for i in range(len(t)):
             print(t[i], end='')
+    #========================================
+    # Priny: 🌠 Free Style 自由形式
+    def priny(self, b, *t):
+        b = str(b)
+        a = [""] * len(t) 
+        for i in range(len(t)):
+            a[i] = str(t[i])
+        m = f"{self.first}{b}{self.title_structure}{self.middle_structure} "
+        m += f"{self.split}".join(a)
+        print(m)
+    #========================================
+    # Pixie: 🧚✨✨✨ たのしいデバッグ用
+    def pixie(self, b, *t):
+        b = str(b)
+        a = [""] * len(t) 
+        for i in range(len(t)):
+            a[i] = str(t[i])
+        #m = f"🧚✨✨✨ {ansi.start}{ansi.fore_light_blue};{ansi.text_on_blink};{ansi.text_on_bold}m{b} {ansi.reset}✨✨ "
+        m = f"🧚✨✨✨ \x1b[36;5;1m{b}\x1b[0m ✨✨ "
+        m += ", ".join(a)
+        print(m)
+    #========================================
+    # Prain: 🌈 Rainbow 🌈
+    def prain(self, b, *t):
+        b = str(b)
+        a = [""] * len(t) 
+        for i in range(len(t)):
+            a[i] = str(t[i])
+        #m = f"{ansi.start}{ansi.fore_light_yellow};{ansi.text_on_bold}m{b}:{ansi.reset} "
+        m = f"\x1b[93;1m{b}:\x1b[0m "
+        m += ", ".join(a)
+        print(f"🌈 {m}")
+    #========================================
+    # Paint: 🎨 Paint Brush 🖌️
+    def paint(self, b, *t):
+        b = str(b)
+        a = [""] * len(t) 
+        for i in range(len(t)):
+            a[i] = str(t[i])
+        #m = f"{ansi.start}{ansi.fore_light_magenta};{ansi.text_on_bold}m{b}:{ansi.reset} "
+        m = f"\x1b[95;1m{b}\x1b[0m 🖌️ "
+        m += "\x20🖌️".join(a)
+        print(f"🎨 {m}")
+    #========================================
+    # Plume: 🌬️ふーっ🌬️
+    def plume(self, b, *t):
+        b = str(b)
+        a = [""] * len(t) 
+        for i in range(len(t)):
+            a[i] = str(t[i])
+        #m = f"{ansi.start}{ansi.fore_white};{ansi.text_on_bold}m{b}{ansi.reset} 🌬️\x20\x20"
+        m = f"\x1b[97;1m{b}\x1b[0m 🌬️ "
+        n = " ".join(a)
+        #print(f"{m} {ansi.start}{ansi.fore_light_cyan};{ansi.text_on_italic}m{n}{ansi.reset} ")
+        print(f"🌬️\x20\x20{m} \x1b[96;3m{n}\x1b[0m")
+    #========================================
+    # Prank: 🤡🎭
+    def prank(self, b, *t):
+        b = str(b)
+        a = [""] * len(t) 
+        for i in range(len(t)):
+            a[i] = str(t[i])
+        #m = f"{ansi.start}{ansi.fore_light_green};{ansi.text_on_bold}m{b}{ansi.reset} {ansi.start}{ansi.fore_light_red};{ansi.text_on_bold}m->{ansi.reset} "
+        m = f"\x1b[92;1m{b}\x1b[0m \x1b[91;1m->\x1b[0m "
+        m += " ".join(a)
+        print(f"🤡 {m}")
+    #========================================
+    # Prown: 🦞えび🦞 🍤Fried Prown🍤
+    def prown(self, b, *t):
+        b = str(b)
+        a = [""] * len(t) 
+        for i in range(len(t)):
+            a[i] = str(t[i])
+        #m = f"{ansi.start}{ansi.fore_light_red};{ansi.text_on_bold}m{b}:{ansi.reset} "
+        m = f"\x1b[91;1m{b}:\x1b[0m "
+        m += ", ".join(a)
+        print(f"🍤 {m}")
+    #========================================
+    # Prism: 三稜鏡 🔮💎🪩🎆🎇🪅🎊🎉🎑☄️✨🌌🌠🌫️🫧🌈🏜️🏞️🌅🌄
+    def prism(self, b, *t):
+        b = str(b)
+        a = [""] * len(t) 
+        for i in range(len(t)):
+            a[i] = str(t[i])
+        #m = f"{ansi.start}{ansi.fore_cyan};{ansi.text_on_bold}m{b}:{ansi.reset}\n\t"
+        m = f"\x1b[96;1m{b}:\x1b[0m\n\t"
+        m += "\n\t".join(a)
+        print(f"🪩 {m}")
 
 ######################################################################
 # CODE
@@ -313,7 +400,9 @@ if __name__ == "__main__":
 
 #=====================================================================
 # ALL - Make it directly accessible from the top level of the package
-__all__ = ["getLogger", "logging", "debug", "info", "warn", "warning", "error", "critical", "notice", "issue", "matter", "exception",
+__all__ = ["getLogger", "logging",
+    "debug", "info", "warn", "warning", "error", "critical", "notice", "issue", "matter", "exception",
+    "ANSIHandler",  "FileHandler", "BufferedFileHandler", "StreamHandler",
     "psolo", "popts", "priny", "pixie", "prain", "paint", "plume", "prank", "prown", "prism",
     ]
 

@@ -46,7 +46,7 @@ class FileHandler(Handler):
             mf += flr
         # ^^;
         if delay is True:
-            with open(self.filename, mode=self.mode, encoding=self.encoding, buffering=self.delay, errors=self.errors)
+            with open(self.filename, mode=self.mode, encoding=self.encoding, buffering=self.delay, errors=self.errors):
                 print(mf, file=self.f)
         # ^^;
         else:
@@ -93,7 +93,7 @@ class BufferedFileHandler(Handler):
         # ^^;
         self.binder.appends(mf + "\n")
     def flush(self):
-        with open(self.filename, mode=self.mode, encoding=self.encoding, buffering=False, errors=self.errors)
+        with open(self.filename, mode=self.mode, encoding=self.encoding, buffering=False, errors=self.errors):
             print(self.binder, file=self.f)
         self.binder.clear()
     def __del__(self):
