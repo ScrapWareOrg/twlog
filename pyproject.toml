@@ -7,7 +7,7 @@ where = ["src/"]
 
 [project]
 name = "twlog"
-version = "0.51.0"
+version = "0.52.0"
 authors = [
   { name="Twinkle Computing", email="twinkle@twinkle.work" },
 ]
@@ -22,4 +22,4 @@ license-files = ["LICEN[CS]E*", "LICENSE.GPLv3", "LICENSE.RPTv1"]
 
 [project.urls]
 Homepage = "https://github.com/ScrapWareORG/twlog"
-Issues = "https://github.com/ScrapWareORG/twlog"
+Issues = "https://github.com/ScrapWareORG/twlog/issues"

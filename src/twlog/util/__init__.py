@@ -123,6 +123,30 @@ def prown(b, *t):
     print(f"🍤 {m}")
 
 #=====================================================================
+# Pinok: 🍄きのこ🍄 🍄‍🟫生えた🍄‍🟫
+def pinok(b, *t):
+    b = str(b)
+    a = [""] * len(t) 
+    for i in range(len(t)):
+        a[i] = str(t[i])
+    #m = f"{ansi.start}{ansi.fore_light_red};{ansi.text_on_bold}m{b}:{ansi.reset} "
+    m = f"\x1b[91;1m{b}:\x1b[0m "
+    m += ", ".join(a)
+    print(f"🍄 {m}")
+
+#=====================================================================
+# Peach: 🍑桃さんくださ〜い！
+def peach(b, *t):
+    b = str(b)
+    a = [""] * len(t) 
+    for i in range(len(t)):
+        a[i] = str(t[i])
+    #m = f"{ansi.start}{ansi.fore_light_red};{ansi.text_on_bold}m{b}:{ansi.reset} "
+    m = f"\x1b[95;1m{b}:\x1b[0m "
+    m += ", ".join(a)
+    print(f"🍑 {m}")
+
+#=====================================================================
 # Prism: 三稜鏡 🔮💎🪩🎆🎇🪅🎊🎉🎑☄️✨🌌🌠🌫️🫧🌈🏜️🏞️🌅🌄
 def prism(b, *t):
     b = str(b)
@@ -176,7 +200,7 @@ if __name__ == "__main__":
 
 #=====================================================================
 # ALL - Make it directly accessible from the top level of the package
-__all__ = ["psolo", "popts", "priny", "pixie", "prain", "paint", "plume", "prank", "prown", "prism"]
+__all__ = ["psolo", "popts", "priny", "pixie", "prain", "paint", "plume", "prank", "prown", "pinok", "peach", "prism"]
 
 """ __DATA__
 

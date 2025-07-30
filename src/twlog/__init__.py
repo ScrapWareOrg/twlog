@@ -21,7 +21,7 @@ from datetime import datetime
 
 import twlog.util
 
-from twlog.util import psolo, popts, priny, pixie, prain, paint, plume, prank, prown, prism
+from twlog.util import psolo, popts, priny, pixie, prain, paint, plume, prank, prown, pinok, peach, prism
 from twlog.util.ANSIColor import ansi
 from twlog.util.Code import *
 from twlog.Filters import Filter
@@ -71,9 +71,12 @@ class root():
         self.disabled = bool(disabled) if disabled is True else False
     # Root Fuynctions
     def isEnabledFor(self, level):
-        return True
+        return False if self.disabled is False or self.level < level else True
+    def setlevel(self, level):
+        self.level = level if level is not None and level in LOG_LEVEL else self.level
+        return self.level
     def getEffectiveLevel(self):
-        return NOTSET
+        return self.level
     def getChild(self, suffix):
         ret = []
         for key in _logger_registry.keys():
@@ -86,8 +89,6 @@ class root():
             if key != self.name and re.search(_logger_registry[key], self.name):
                 ret.append(key)
         return ret
-    def exception(msg, *args, **kwargs):
-        return True
     def setHandler(self, hdlr):
         self.handlers = hdlr
     def addHandler(self, hdlr):
@@ -103,22 +104,20 @@ class root():
         return LogRecord(name=name, level=level, fn=None, lno=None, msg=msg, args=self._args, exc_info=None, func=func, extra=extra, sinfo=sinfo)
     def hasHandlers(self):
         return True if len(self.handlers) != 0 else False
-    def Formatter(self):
-        return self.formatter
+    ##==========
+    ## Not yet
+    def addFilter(self):
+        return True
+    def removeFilter(self):
+        return True
+    def filter(self, record):
+        return record
+    ##==========
     # Caller
     def findCaller(self, stack_info=False, stack_level=1):
         caller_frame = inspect.currentframe().f_back
         caller_class = caller_frame.f_locals.get('self', None).__class__
         return caller_class.__name__
-    def test(self, message: any = None):
-        for l in LOG_LEVEL.keys():
-            if l == "NOTSET": continue
-            self.__call__((message if message is not None else l), level=LOG_LEVEL[l], title=l)
-    # Logging
-    def log(self, message:any = None, level: int = 20, title: str = None):
-        title = title if title is not None else 'LOG'
-        if self.propagate is True and self.parent is not None:
-            self.parent.log(message=message, level=level, title=title)
     # Array Disaddembly
     def msg_disassembly(self, message):
         if hasattr(message, 'tolist'):
@@ -130,7 +129,7 @@ class root():
         else: message = str(message)
         return message
     # Promise for Console
-    def logging(self, datefmt: str = None, msgfmt: str = None, message: str = None, level: int = 20, title: str = None):
+    def logging(self, message: str = None, level: int = 20, title: str = None):
         # Title Setting
         title = str(title) if title is not None else self.name.upper()
         level = level if level is not None else self.level
@@ -139,6 +138,22 @@ class root():
         records = self.makeRecord(title, level, None, None, message, self._args, None, func=None, extra=None, sinfo=None)
         # Handlers
         self.handle(records)
+    def test(self, message: any = None):
+        for l in LOG_LEVEL.keys():
+            if l == "NOTSET": continue
+            self.__call__((message if message is not None else l), level=LOG_LEVEL[l], title=l)
+    # Logging
+    def log(self, message:any = None, level: int = 20, title: str = None):
+        title = title if title is not None else 'LOG'
+        if self.propagate is True and self.parent is not None:
+            self.parent.logging(message=message, level=level, title=title)
+        self.logging(message=message, level=level, title=title)
+    # Exception (ERROR)
+    def exception(self, message:any = None, title: str = None):
+        title = title if title is not None else 'EXCEPT'
+        if self.propagate is True and self.parent is not None:
+            self.parent.logging(message=message, level=ERROR, title=title)
+        self.logging(message=message, level=ERROR, title=title)
     # Wrappers
     def debug(self, message:any = None, level=10, title=None):
         title = title if title is not None else 'DEBUG'
@@ -286,6 +301,28 @@ class logging(root, ansi):
         m += " ".join(a)
         print(f"🤡 {m}")
     #========================================
+    # Pinok: 🍄きのこ🍄 🍄‍🟫生えた🍄‍🟫
+    def pinok(b, *t):
+        b = str(b)
+        a = [""] * len(t) 
+        for i in range(len(t)):
+            a[i] = str(t[i])
+        #m = f"{ansi.start}{ansi.fore_light_red};{ansi.text_on_bold}m{b}:{ansi.reset} "
+        m = f"\x1b[91;1m{b}:\x1b[0m "
+        m += ", ".join(a)
+        print(f"🍄 {m}")
+    #========================================
+    # Peach: 🍑桃さんくださ〜い！
+    def peach(b, *t):
+        b = str(b)
+        a = [""] * len(t) 
+        for i in range(len(t)):
+            a[i] = str(t[i])
+        #m = f"{ansi.start}{ansi.fore_light_red};{ansi.text_on_bold}m{b}:{ansi.reset} "
+        m = f"\x1b[95;1m{b}:\x1b[0m "
+        m += ", ".join(a)
+        print(f"🍑 {m}")
+    #========================================
     # Prown: 🦞えび🦞 🍤Fried Prown🍤
     def prown(self, b, *t):
         b = str(b)
@@ -403,7 +440,7 @@ if __name__ == "__main__":
 __all__ = ["getLogger", "logging",
     "debug", "info", "warn", "warning", "error", "critical", "notice", "issue", "matter", "exception",
     "ANSIHandler",  "FileHandler", "BufferedFileHandler", "StreamHandler",
-    "psolo", "popts", "priny", "pixie", "prain", "paint", "plume", "prank", "prown", "prism",
+    "psolo", "popts", "priny", "pixie", "prain", "paint", "plume", "prank", "prown", "pinok", "peach", "prism",
     ]
 
 """ __DATA__

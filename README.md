@@ -32,7 +32,7 @@ import twlog
 import numpy as np # Example for array disassembly
 
 # Get a logger instance
-logger = twlog.getLogger("MyApplication")
+logger = twlog.getLogger(__name__)
 
 # Output a simple info message
 logger.info("Application started successfully!")
@@ -51,6 +51,55 @@ twlog.pixie("Status", "Data processing complete!")
 -----
 
 ## Basic Usage
+
+Impremented Features.
+
+### Handlers
+ * **ANSIHandler(*Defaults*)**: sys.stdout, coloring with ANSI code
+ * **StreamHandler**: sys.stdin, sys.stderr
+ * **FileHandler**: filehandle
+ * **BufferedFileHandler**: filehandle, write on last(destruction).
+ * **NullHandler**: Null handler.
+
+### Compatible Imprements
+ * **LogRecord**: ...
+
+### Compatible Imprements (*Yet Another*)
+ * **Formatter**: from now on...
+ * **Filter**: Empty yet.
+ * **BasicConfig**: from now on...
+
+### Logging Messages
+
+The primary logging method is `logger.logging()`, but `twlog` also provides convenience methods like `info()`, `debug()`, `warning()`, `error()`, and `critical()` which automatically set the `level` argument.
+
+```python
+logger = twlog.getLogger(__name__)
+
+# Logging with a custom title
+# The title will default to the uppercase version of the logger's name if not provided.
+logger.info("User 'admin' logged in.", title="Security")
+logger.debug("Variable X: 123", title="Debugger")
+```
+
+### Using Error Codes
+
+```python
+from twlog.util.Code import *
+
+NOTSET   = 0
+DEBUG    = 10
+INFO     = 20
+WARN     = 30
+WARNING  = 30
+ERROR    = 40
+CRITICAL = 50
+NOTICE   = 60
+ISSUE    = 70
+MATTER   = 80
+```
+
+---
 
 ### Obtaining a Logger
 
@@ -85,89 +134,85 @@ logger.debug("This debug message will NOT appear now.")
 logger.info("This info message WILL appear.")
 ```
 
-### Logging Messages
-
-The primary logging method is `logger.logging()`, but `twlog` also provides convenience methods like `info()`, `debug()`, `warning()`, `error()`, and `critical()` which automatically set the `level` argument.
-
-```python
-logger = twlog.getLogger("ExampleLogger")
-
-logger.info("A standard information message.")
-logger.warning("This is a warning about something.")
-logger.error("An error occurred during file operation.")
-
-# Logging with a custom title
-# The title will default to the uppercase version of the logger's name if not provided.
-logger.info("User 'admin' logged in.", title="Security")
-logger.debug("Variable X: 123", title="Debugger")
-logger.info("This message's title will be 'EXAMPLELOGGER'.") # Example without title argument
-```
-
-### Handling Numerical Arrays
-
-`twlog` automatically converts common numerical array types (`numpy.ndarray`, `torch.Tensor`, etc.) into readable Python list or scalar strings.
-
-```python
-import twlog
-import numpy as np
-# import torch # Uncomment if you use PyTorch
-
-logger = twlog.getLogger("ArrayLogger")
-
-# NumPy array example
-numpy_array = np.array([[1.0, 2.0], [3.0, 4.0]])
-logger.info(numpy_array, title="Numpy Data")
-
-# Single element array (converts to scalar)
-single_element_array = np.array([5.0])
-logger.info(single_element_array, title="Single Element")
-
-# PyTorch Tensor example (if torch is installed)
-# pytorch_tensor = torch.tensor([[10, 20], [30, 40]])
-# logger.info(pytorch_tensor, title="PyTorch Data")
-```
-
 ### Using Fun Print Functions (Top-Level)
 
 `twlog` provides a set of highly visual, emoji-enhanced functions directly accessible from the `twlog` package. These are ideal for making specific debug messages or status updates stand out in your console.
 
+#### Logger Builtins
+
 ```python
-import twlog
+logger = twlog.getLogger(__name__)
 
-# Prints options as key-value pairs
-twlog.popts("Settings", "verbose=True", "cache_enabled=False")
+# for Priny {ansi.start}...m
+logger.first            = "🌟 \x1b[94;1m"
+# ?{ansi.reset}
+logger.title_structure  = ":\x1b[0m"
+# e.g. -> {ansi.start}{ansi.fore_light_red};{ansi.text_on_bold}m->{ansi.reset}
+logger.middle_structure = ""
+logger.split            = " "
 
-# Prints a message without a newline (useful for progress bars)
-import time
-twlog.psolo("Progress: ")
-for i in range(5):
-    twlog.psolo(f"{i*20}% ")
-    time.sleep(0.1)
-twlog.psolo("\n") # Add a newline at the end
+# 🌟 priny: priny
+logger.priny("priny", "priny")
+
+# 🍑 peach: peach
+logger.peach("peach", "peach")
+
+# Other Fun Print Functions
+
+🧚✨✨✨ pixie ✨✨ ...
+🌈 prain: ...
+🎨 paint 🖌️ ...
+🌬️ plume 🌬️ ...
+🤡 prank -> ...
+🍤 prown: ...
+🍄 pinok: ...
+🍑 peach: ...
+
+# Multi Line Fun Print Functions
+
+🪩 prism:
+        ...
+
+```
+
+#### twlog.util
+
+```python
+twlog.util import *
+
+# for Priny {ansi.start}...m
+twlog.util.first            = "🌠 \x1b[94;1m"
+# ?{ansi.reset}
+twlog.util.title_structure  = ":\x1b[0m"
+# e.g. -> {ansi.start}{ansi.fore_light_red};{ansi.text_on_bold}m->{ansi.reset}
+twlog.util.middle_structure = ""
+twlog.util.split            = " "
 
 # Free-style message with a star emoji and blue bold title
 twlog.priny("System Boot", "Checking dependencies", "Loading modules")
 
-# Magic-like message with fairy emojis, cyan color, and blinking effect
-twlog.pixie("Success!", "Model training complete!", "Accuracy: 99.1%")
+# 🌠 priny: priny
+logger.priny("priny", "priny")
 
-# Rainbow-themed message with a rainbow emoji and yellow bold title
-twlog.prain("Result", "Training Loss: 0.005", "Validation Loss: 0.007")
+# 🍑 peach: peach
+logger.peach("peach", "peach")
+```
 
-# Message with paint brush emojis and magenta bold title for colorful output
-twlog.paint("Color Palette", "Primary: Red", "Secondary: Green", "Tertiary: Blue")
+#### popts, psolo
 
-# Light, flowing message with wind emojis and white bold title
-twlog.plume("Stream", "Reading data stream from sensor.", "Filtering noise...")
+```python
+twlog.util import *
 
-# Playful message with clown emojis, green and red bold text (great for playful debugging)
-twlog.prank("Heads Up!", "This feature is still experimental.", "Use with caution!")
+# Prints options as key-value pairs
+popts("Settings", "verbose=True", "cache_enabled=False")
 
-# Message with shrimp emoji and red bold title
-twlog.prown("Fatal Error", "Database connection lost!", "Please restart the server.")
-
-# Multi-line, structured message with a disco ball emoji (ideal for summaries)
-twlog.prism("Summary Report", "Total Users: 5000", "New Signups: 150", "Active Sessions: 1200")
+# Prints a message without a newline (useful for progress bars)
+import time
+psolo("Progress: ")
+for i in range(5):
+    psolo(f"{i*20}% ")
+    time.sleep(0.1)
+psolo("\n") # Add a newline at the end
 ```
 
 -----
@@ -182,7 +227,7 @@ To run the test, simply execute:
 python -m twlog
 ```
 
-![sample](https://raw.githubusercontent.com/ScrapWareOrg/twlog/refs/heads/main/sample1.png)
+![sample](https://raw.githubusercontent.com/ScrapWareOrg/twlog/refs/heads/main/sample2.png)
 
 This will output a series of test messages demonstrating various logging levels and fun print functions.
 
@@ -290,6 +335,16 @@ These functions are designed for visually distinct console output, leveraging AN
       * **Description**: Prints a message with a shrimp emoji (`🍤`) and red bold title.
       * **Usage**: `prown("Fatal Error", "Database connection lost!", "Please restart the server.")`
 
+  * `pinok(b: Any, *t: Any)`
+
+      * **Description**: Prints a message with a magic mushroom emoji (`🍄`) and red bold title.
+      * **Usage**: `pinok("Fatal Error", "Database connection lost!", "Please restart the server.")`
+
+  * `peach(b: Any, *t: Any)`
+
+      * **Description**: Prints a delicious message with a peach emoji (`🍑`) and red bold title.
+      * **Usage**: `peach("Fatal Error", "Database connection lost!", "Please restart the server.")`
+
   * `prism(b: Any, *t: Any)`
 
       * **Description**: Prints a multi-line, structured message with a disco ball emoji (`🪩`) and cyan bold title. Ideal for displaying summaries or structured data that benefits from line breaks. Each `*t` argument appears on a new line, indented.
@@ -308,3 +363,4 @@ We welcome contributions to `twlog`\! If you find a bug, have a feature request,
 ## License
 
 `twlog` is licensed under the GPLv3 AND LicenseRef-RPTv1.
+
