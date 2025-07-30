@@ -24,6 +24,7 @@ import twlog.util
 from twlog.util import psolo, popts, priny, pixie, prain, paint, plume, prank, prown, pinok, peach, prism
 from twlog.util.ANSIColor import ansi
 from twlog.util.Code import *
+from twlog.BasicConfig import basicConfig, basicConfig_lock, basicConfig_done, basicConfig_true
 from twlog.Filters import Filter
 from twlog.Formatters import Formatter, LogRecord
 from twlog.Handlers import Handler
@@ -36,26 +37,11 @@ from twlog.Handlers.Stream import StreamHandler
 _logger_registry = {}
 
 ######################################################################
-# BASIC CONFIG
-_basicConfig = {
-     "level": INFO,
-       "fmt": "%(asctime)s %(message)s",
-   "datefmt": "[%Y-%m-%d %H:%M:%S]",
-  "handlers": [],
- "formatter": None,
-}
-
-######################################################################
-# LOCKED CONFIG
-_basicConfig_lock = threading.Lock()
-_basicConfig_done = False
-
-######################################################################
 # RootLogger - really fake root logger
 
 class root():
     # Initialization
-    def __init__(self, level=INFO, propagate=False, parent=None, disabled=False, *args, **kwargs) -> None:
+    def __init__(self, level=INFO, propagate=False, parent=None, disabled=False, handlers=[], *args, **kwargs) -> None:
         # Arguments
         self._args = args
         self._kwargs = kwargs
@@ -64,7 +50,7 @@ class root():
         # Log Level
         self.level = level if level is not None and level in LOG_LEVEL else INFO
         # Handlers
-        self.handlers = _basicConfig["handlers"]
+        self.handlers = handlers
         # Current
         self.parent = parent if parent is not None else None
         self.propagate = bool(propagate) if propagate is True else False
@@ -100,15 +86,15 @@ class root():
     def handle(self, record):
         for h in range(len(self.handlers)):
             self.handlers[h].emit(record)
-    def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None, sinfo=None):
-        return LogRecord(name=name, level=level, fn=None, lno=None, msg=msg, args=self._args, exc_info=None, func=func, extra=extra, sinfo=sinfo)
+    def makeRecord(self, name, level, fn, lno, msg, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
+        return LogRecord(name=name, level=level, fn=None, lno=None, msg=msg, exc_info=exc_info, func=func, extra=extra, sinfo=sinfo)
     def hasHandlers(self):
         return True if len(self.handlers) != 0 else False
     ##==========
     ## Not yet
-    def addFilter(self):
+    def addFilter(self, *args, **kwargs):
         return True
-    def removeFilter(self):
+    def removeFilter(self, *args, **kwargs):
         return True
     def filter(self, record):
         return record
@@ -119,84 +105,84 @@ class root():
         caller_class = caller_frame.f_locals.get('self', None).__class__
         return caller_class.__name__
     # Array Disaddembly
-    def msg_disassembly(self, message):
-        if hasattr(message, 'tolist'):
-            try: message = str(message.tolist())
-            except: message = str(message)
-        elif hasattr(message, 'item'):
-            try: message = str(message.item())
-            except: message = str(message)
-        else: message = str(message)
-        return message
+    def msg_disassembly(self, msg):
+        if hasattr(msg, 'tolist'):
+            try: msg = str(msg.tolist())
+            except: msg = str(msg)
+        elif hasattr(msg, 'item'):
+            try: msg = str(msg.item())
+            except: msg = str(msg)
+        else: msg = str(msg)
+        return msg
     # Promise for Console
-    def logging(self, message: str = None, level: int = 20, title: str = None):
+    def logging(self, msg:any = None, level: int = 20, title: str = None, exc_info=True, func=None, extra=None, sinfo=None, *args, **kwargs):
         # Title Setting
         title = str(title) if title is not None else self.name.upper()
         level = level if level is not None else self.level
         # numpy.ndarray, torch.Tensor, Jax, ...
-        message = message if isinstance(message, str) else self.msg_disassembly(message)
-        records = self.makeRecord(title, level, None, None, message, self._args, None, func=None, extra=None, sinfo=None)
+        msg = msg if isinstance(msg, str) else self.msg_disassembly(msg)
+        records = self.makeRecord(title, level, None, None, msg, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
         # Handlers
         self.handle(records)
-    def test(self, message: any = None):
+    def test(self, msg: any = None):
         for l in LOG_LEVEL.keys():
             if l == "NOTSET": continue
-            self.__call__((message if message is not None else l), level=LOG_LEVEL[l], title=l)
+            self.__call__((msg if msg is not None else l), level=LOG_LEVEL[l], title=l)
     # Logging
-    def log(self, message:any = None, level: int = 20, title: str = None):
+    def log(self, msg:any = None, level: int = 20, title: str = None, exc_info=True, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else 'LOG'
         if self.propagate is True and self.parent is not None:
-            self.parent.logging(message=message, level=level, title=title)
-        self.logging(message=message, level=level, title=title)
+            self.parent.logging(msg=msg, level=level, title=title, exc_info=False, func=None, extra=None, sinfo=None)
+        self.logging(msg=msg, level=level, title=title, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
     # Exception (ERROR)
-    def exception(self, message:any = None, title: str = None):
+    def exception(self, msg:any = None, title: str = None, exc_info=True, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else 'EXCEPT'
         if self.propagate is True and self.parent is not None:
-            self.parent.logging(message=message, level=ERROR, title=title)
-        self.logging(message=message, level=ERROR, title=title)
+            self.parent.logging(msg=msg, level=ERROR, title=title, exc_info=True, func=None, extra=None, sinfo=None, *args, **kwargs)
+        self.logging(msg=msg, level=ERROR, title=title, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
     # Wrappers
-    def debug(self, message:any = None, level=10, title=None):
+    def debug(self, msg:any = None, level=10, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else 'DEBUG'
-        self.logging(message=message, level=level, title=title)
-    def info(self, message:any = None, level=20, title=None):
+        self.logging(msg=msg, level=level, title=title, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
+    def info(self, msg:any = None, level=20, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else 'INFO'
-        self.logging(message=message, level=level, title=title)
-    def warn(self, message:any = None, level=30, title=None):
+        self.logging(msg=msg, level=level, title=title, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
+    def warn(self, msg:any = None, level=30, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else 'WARN'
-        self.logging(message=message, level=level, title=title)
-    def error(self, message:any = None, level=40, title=None):
+        self.logging(msg=msg, level=level, title=title, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
+    def error(self, msg:any = None, level=40, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else 'ERROR'
-        self.logging(message=message, level=level, title=title)
-    def critical(self, message:any = None, level=50, title=None):
+        self.logging(msg=msg, level=level, title=title, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
+    def critical(self, msg:any = None, level=50, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else 'CRITICAL'
-        self.logging(message=message, level=level, title=title)
-    def notice(self, message:any = None, level=25, title=None):
+        self.logging(msg=msg, level=level, title=title, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
+    def notice(self, msg:any = None, level=25, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else 'NOTICE'
-        self.logging(message=message, level=level, title=title)
-    def issue(self, message:any = None, level=60, title=None):
+        self.logging(msg=msg, level=level, title=title, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
+    def issue(self, msg:any = None, level=60, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else 'ISSUE'
-        self.logging(message=message, level=level, title=title)
-    def matter(self, message:any = None, level=70, title=None):
+        self.logging(msg=msg, level=level, title=title, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
+    def matter(self, msg:any = None, level=70, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else '\x27O\x27 MATTER'
-        self.logging(message=message, level=level, title=title)
+        self.logging(msg=msg, level=level, title=title, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
     #========================================
-    def __call__(self, message:any = None, level=None, title=None):
+    def __call__(self, msg:any = None, level=None, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
         level = level if level is not None else self.level
-        if level == NOTSET: self.log(level, message, title=title)
-        elif level == DEBUG: self.debug(message, level=level, title=title)
-        elif level == WARN: self.warn(message, level=level, title=title)
-        elif level == ERROR: self.error(message, level=level, title=title)
-        elif level == NOTICE: self.notice(message, level=level, title=title)
-        elif level == ISSUE: self.issue(message, level=level, title=title)
-        elif level == MATTER: self.matter(message, level=level, title=title)
-        else: self.info(message, level=level, title=title)
+        if level == NOTSET: self.log(level, msg, title=title)
+        elif level == DEBUG: self.debug(msg, level=level, title=title)
+        elif level == WARN: self.warn(msg, level=level, title=title)
+        elif level == ERROR: self.error(msg, level=level, title=title)
+        elif level == NOTICE: self.notice(msg, level=level, title=title)
+        elif level == ISSUE: self.issue(msg, level=level, title=title)
+        elif level == MATTER: self.matter(msg, level=level, title=title)
+        else: self.info(msg, level=level, title=title)
 
 ######################################################################
 # Logger
 class logging(root, ansi):
     # Initialization
     def __init__(self, name=None, level=INFO, propagate=False, parent=None, disabled=False, handlers=[], *args, **kwargs) -> None:
-        super(logging, self).__init__(level=level, propagate=propagate, parent=parent, disabled=False)
+        super(logging, self).__init__(level=level, propagate=propagate, parent=parent, disabled=False, handlers=handlers, *args, **kwargs)
         self.name = str(name) if name is not None else __name__
         # for Priny {ansi.start}...m
         self.first            = "🌠 \x1b[94;1m"
@@ -205,6 +191,16 @@ class logging(root, ansi):
         # e.g. -> {ansi.start}{ansi.fore_light_red};{ansi.text_on_bold}m->{ansi.reset}
         self.middle_structure = ""
         self.split            = " "
+    #========================================
+    # Override
+    def process(self, msg, **kwargs):
+        return (msg, kwargs)
+    def manager(self):
+        return
+    def _log(self, *args, **kwargs):
+        self.log(*args, **kwargs)
+    
+    #========================================
     # Safe Update
     def safedate(self, src: dict, dest: dict) -> dict:
         for key in dest.keys():
@@ -348,67 +344,47 @@ class logging(root, ansi):
 ######################################################################
 # CODE
 
-_basicConfig["handlers"] = [ANSIHandler(level=INFO)]
-_basicConfig["formatter"] =  Formatter()
-_basicConfig["filter"] =  Filter()
-for h in range(len(_basicConfig["handlers"])):
-    _basicConfig["handlers"][h].setFormatter(_basicConfig["formatter"])
-
-# Basic Configuration
-def basicConfig(level:int = INFO, fmt: str = "%(message)s", datefmt: str = "[%Y-%m-%d %H:%M:%S]", handlers: list = None, formatter: Formatter = None):
-    _basicConfig["level"] = level if level is not None and level in LOG_LEVEL else INFO
-    _basicConfig["fmt"] = str(fmt) if fmt is not None and type(fmt) == 'str' else "%(message)s"
-    _basicConfig["datefmt"] = str(datefmt) if datefmt is not None and type(datefmt) == 'str' else "[%Y-%m-%d %H:%M:%S]"
-    # Handlers
-    if handlers is None or len(handlers) == 0:
-        _basicConfig["handlers"] = [RichHandler(level=INFO, stream=sys.stdout, stream_err=sys.stderr, markup=True, rich_tracebacks=True)]
-    # Formatter
-    _basicConfig["formatter"] = formatter if formatter is not None else Formatter(fmt=_basicConfig["format"], datefmt=_basicConfig["datefmt"])
-    for h in range(len(_basicConfig["handlers"])):
-        _basicConfig["handlers"][h].setFormatter(_basicConfig["formatter"])
-    # ^^;
-    return _basicConfig.copy()
-
 # ChatGPT
-def getLogger(name=None):
+def getLogger(name=None, propagate=False, disabled=False, handlers=[], *args, **kwargs):
     if not name:
         name = "__main__"
     if name in _logger_registry:
         return _logger_registry[name]
-
+    # Get Parent
     parent_name = ".".join(name.split(".")[:-1]) if "." in name else None
     parent = _logger_registry.get(parent_name) if parent_name else None
-
-    logger = logging(name=name, level=_basicConfig["level"], parent=parent)
+    # basicConfig
+    bconf = basicConfig()
+    # Logger
+    logger = logging(name=name, level=bconf["level"], propagate=False, parent=parent, disabled=False, handlers=bconf["handlers"], *args, **kwargs)
     _logger_registry[name] = logger
+    # ^^;
     return logger
 
 ######################################################################
-# CONFIG互換関数
+# CONFIG COMPATIBILITY FUNCS
 
 def RootLogger(*args, force=False, **kwargs):
     """
     logging.basicConfig 互換
     最初に一度だけ設定し、root を構成します。
     """
-    global _basicConfig_done, root
-    with _basicConfig_lock:
-        if _basicConfig_done and not force:
+    with basicConfig_lock():
+        if basicConfig_done() and not force:
             return
         basicConfig(*args, **kwargs)
         root = getLogger("__main__")
-        root.addFilter(filter("__main__"))
-        _basicConfig_done = True
+        basicConfig_true()
 
 ######################################################################
 # getLogger
 
-root = root()
+root = RootLogger()
 
 ######################################################################
 # Log Level Compatibility
 
-def debug(*args, **kwargs):
+def debug(exc_info=True, *args, **kwargs):
     root.debug(*args, **kwargs)
 def info(*args, **kwargs):
     root.info(*args, **kwargs)

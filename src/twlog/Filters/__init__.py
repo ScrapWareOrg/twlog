@@ -12,9 +12,9 @@ class Filter():
     def __init__(self, name=None) -> None:
         super(Filter, self).__init__()
         self.name = str(name) if name is not None else __name__
-    def Filter(self, record):
+    def filter(self, record):
         # Do Nothing
-        return record
+        return True
 
 ######################################################################
 # MAIN

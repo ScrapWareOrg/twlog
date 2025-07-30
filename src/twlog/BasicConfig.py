@@ -1,43 +1,31 @@
 #!/home/twinkle/venv/bin/python
 
-import os
 import sys
+
 import threading
-import re
-
-import time
-import locale
-
-import shutil
-import inspect
-import traceback
-
-import torch
-
-import socket
-
-from datetime import datetime
 
 ######################################################################
 # LIBS
 
-from twlog.Code import *
+from twlog.util.ANSIColor import ansi
+from twlog.util.Code import *
 from twlog.Filters import Filter
 from twlog.Formatters import Formatter, LogRecord
 from twlog.Handlers import Handler
-from twlog.Handlers.Ansi import AnsiHandler
+from twlog.Handlers.ANSI import ANSIHandler
+from twlog.Handlers.File import FileHandler, BufferedFileHandler
 from twlog.Handlers.Stream import StreamHandler
-from twlog.Handlers.File import FileHandler
-from twlog.util.AnsiColor import ansi
+from twlog.Handlers.ChatGPT.SysLog import SyslogHandler
 
 ######################################################################
 # BASIC CONFIG
 _basicConfig = {
      "level": INFO,
-       "fmt": "%(asctime)s %(message)s",
+       "fmt": "%(asctime)s %(levelname)s %(message)s",
    "datefmt": "[%Y-%m-%d %H:%M:%S]",
   "handlers": [],
  "formatter": None,
+    "filter": None,
 }
 
 ######################################################################
@@ -46,23 +34,38 @@ _basicConfig_lock = threading.Lock()
 _basicConfig_done = False
 
 ######################################################################
+# DEFS
+
+def basicConfig_lock():
+    return _basicConfig_lock
+def basicConfig_done():
+    return _basicConfig_done
+def basicConfig_true():
+    _basicConfig_done = True
+
+######################################################################
 # CODE
 
-_basicConfig["handlers"] = [RichHandler(level=INFO)]
+_basicConfig["handlers"] = [ANSIHandler(level=INFO)]
 _basicConfig["formatter"] =  Formatter()
+_basicConfig["filter"] =  Filter()
 for h in range(len(_basicConfig["handlers"])):
     _basicConfig["handlers"][h].setFormatter(_basicConfig["formatter"])
 
 # Basic Configuration
-def basicConfig(level:int = INFO, fmt: str = "%(message)s", datefmt: str = "[%Y-%m-%d %H:%M:%S]", handlers: list = None, formatter: Formatter = None):
+def basicConfig(filename=None, filemode='a', format: str = _basicConfig["fmt"], datefmt: str = "[%Y-%m-%d %H:%M:%S]", style: str = '%', level:int = INFO, stream=None, handlers: list = None, force=False, encoding=None, errors=None):
     _basicConfig["level"] = level if level is not None and level in LOG_LEVEL else INFO
-    _basicConfig["fmt"] = str(fmt) if fmt is not None and type(fmt) == 'str' else "%(message)s"
+    _basicConfig["fmt"] = str(format) if format is not None and type(format) == 'str' else _basicConfig["fmt"]
     _basicConfig["datefmt"] = str(datefmt) if datefmt is not None and type(datefmt) == 'str' else "[%Y-%m-%d %H:%M:%S]"
     # Handlers
     if handlers is None or len(handlers) == 0:
-        _basicConfig["handlers"] = [RichHandler(level=INFO, stream=sys.stdout, stream_err=sys.stderr, markup=True, rich_tracebacks=True)]
+        if filename is not None:
+            _basicConfig["handlers"] = [FileHandler(level=INFO, filename=filename, mode=filemode, encoding=encoding, delay=False, errors=errors)]
+        else:
+            stream = stream if stream is not None else sys.stdout
+            _basicConfig["handlers"] = [ANSIHandler(level=INFO, stream=sys.stdout, stream_err=sys.stderr, markup=True, rich_tracebacks=True)]
     # Formatter
-    _basicConfig["formatter"] = formatter if formatter is not None else Formatter(fmt=_basicConfig["format"], datefmt=_basicConfig["datefmt"])
+    _basicConfig["formatter"] = Formatter(fmt=_basicConfig["fmt"], datefmt=_basicConfig["datefmt"])
     for h in range(len(_basicConfig["handlers"])):
         _basicConfig["handlers"][h].setFormatter(_basicConfig["formatter"])
     # ^^;
@@ -76,7 +79,7 @@ if __name__ == "__main__":
 
 #=====================================================================
 # ALL - Make it directly accessible from the top level of the package
-__all__ = ["basicConfig"]
+__all__ = ["basicConfig_lock", "basicConfig_done", "basicConfig_true", "basicConfig"]
 
 """ __DATA__
 

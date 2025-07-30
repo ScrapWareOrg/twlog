@@ -55,11 +55,13 @@ twlog.pixie("Status", "Data processing complete!")
 Impremented Features.
 
 ### Handlers
- * **ANSIHandler(*Defaults*)**: sys.stdout, coloring with ANSI code
+ * **NullHandler**: Null handler.
  * **StreamHandler**: sys.stdin, sys.stderr
+ * **ANSIHandler(*Defaults*)**: sys.stdout, coloring with ANSI code
  * **FileHandler**: filehandle
  * **BufferedFileHandler**: filehandle, write on last(destruction).
  * **NullHandler**: Null handler.
+ * **ChatGpt.SysLogHandler**: (Nothing) Output for Syslog, Yet Another Direction?
 
 ### Compatible Imprements
  * **LogRecord**: ...
@@ -305,45 +307,13 @@ These functions are designed for visually distinct console output, leveraging AN
       * **Description**: Prints a free-style message with a leading star emoji (`🌠`), blue bold title, and a customizable structure.
       * **Usage**: `priny("System Boot", "Checking dependencies", "Loading modules")`
 
-  * `pixie(b: Any, *t: Any)`
+#### Other Fun Print Functions (Top-Level)
 
-      * **Description**: Prints a magic-like message with fairy emojis (`🧚✨✨✨`), cyan color, and a blinking effect. Ideal for highlighting magical or important events.
+  * `pixie` `prain` `paint` `plume` `prank` `prown` `pinok` `peach` 
+
+      * **Arguments**: `(b: Any, *t: Any)`
+      * **Description**: Prints a colorful message with a some emoji and some color bold title.
       * **Usage**: `pixie("Success!", "Model training complete!", "Accuracy: 99.1%")`
-
-  * `prain(b: Any, *t: Any)`
-
-      * **Description**: Prints a rainbow-themed message with a rainbow emoji (`🌈`) and yellow bold title.
-      * **Usage**: `prain("Result", "Training Loss: 0.005", "Validation Loss: 0.007")`
-
-  * `paint(b: Any, *t: Any)`
-
-      * **Description**: Prints a message with paint brush emojis (`🎨🖌️`) and magenta bold title, for colorful output. Uses a brush stroke (`🖌️`) as a separator between `*t` arguments.
-      * **Usage**: `paint("Color Palette", "Primary: Red", "Secondary: Green", "Tertiary: Blue")`
-
-  * `plume(b: Any, *t: Any)`
-
-      * **Description**: Prints a light, flowing message with wind emojis (`🌬️`) and white bold title. The body text is italic and cyan.
-      * **Usage**: `plume("Stream", "Reading data stream from sensor.", "Filtering noise...")`
-
-  * `prank(b: Any, *t: Any)`
-
-      * **Description**: Prints a playful message with clown emojis (`🤡`), green and red bold text. Useful for lighthearted debugging or temporary messages.
-      * **Usage**: `prank("Heads Up!", "This feature is still experimental.", "Use with caution!")`
-
-  * `prown(b: Any, *t: Any)`
-
-      * **Description**: Prints a message with a shrimp emoji (`🍤`) and red bold title.
-      * **Usage**: `prown("Fatal Error", "Database connection lost!", "Please restart the server.")`
-
-  * `pinok(b: Any, *t: Any)`
-
-      * **Description**: Prints a message with a magic mushroom emoji (`🍄`) and red bold title.
-      * **Usage**: `pinok("Fatal Error", "Database connection lost!", "Please restart the server.")`
-
-  * `peach(b: Any, *t: Any)`
-
-      * **Description**: Prints a delicious message with a peach emoji (`🍑`) and red bold title.
-      * **Usage**: `peach("Fatal Error", "Database connection lost!", "Please restart the server.")`
 
   * `prism(b: Any, *t: Any)`
 

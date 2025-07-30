@@ -1,22 +1,9 @@
 #!/home/twinkle/venv/bin/python
 
-import os
-import sys
-import threading
-import re
-
-
-import shutil
-import inspect
-import traceback
-
-from datetime import datetime
-
 ######################################################################
 # LIBS
 
 from twlog.util.Code import *
-from twlog.util.ANSIColor import ansi
 from twlog.Formatters import Formatter, LogRecord
 
 ######################################################################
@@ -51,9 +38,9 @@ class Handler():
         return True
     def close(self):
         return True
-    def handle(self, records):
+    def handle(self, record):
         return True
-    def handleError(self, records):
+    def handleError(self, record):
         return True
     # Formatter
     def setFormatter(self, fmt: Formatter = None):

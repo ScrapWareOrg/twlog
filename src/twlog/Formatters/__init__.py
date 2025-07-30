@@ -2,38 +2,50 @@
 
 import os
 import sys
-import threading
-import re
 
 import time
 import locale
 
-import shutil
 import inspect
 import traceback
 
-import socket
+import asyncio
+import threading
 
 from datetime import datetime
 
 ######################################################################
 # LIBS
 
+from twlog.util import psolo, popts, priny, pixie, prain, paint, plume, prank, prown, pinok, peach, prism
 from twlog.util.ANSIColor import ansi
 from twlog.util.Code import *
+
+######################################################################
+# VARS
+styles = ['%', '$', '{']
 
 ######################################################################
 # Classes - Formatter
 
 class Formatter():
-    def __init__(self, fmt="%(message)s", datefmt="[%Y-%m-%d %H:%M:%S]", stype='%', validate=True, *, defaults=None) -> None:
+    def __init__(self, fmt="%(message)s", datefmt="[%Y-%m-%d %H:%M:%S]", style='%', validate=True, *, defaults=None) -> None:
         super(Formatter, self).__init__()
         # Formats
         self.datefmt = str(datefmt) if datefmt is not None else "[%Y-%m-%d %H:%M:%S]"
-        self.fmt = str(format) if format is not None else "%(message)s"
+        self.fmt = str(fmt) if fmt is not None else "%(message)s"
+        self.style = str(style) if style is not None and style in styles else "%"
     def formatMessage(self, record):
-        for key in record.keys():
-            str(record["message"]).replace(f"%({key})s", "\x7b{record[\x22key\x22]}\x7d")
+        record["message"] = record.getMessage()
+        temp = str(self.fmt)
+        if self.style == '$':
+            for key in record.keys():
+                record["message"] = self.fmt.replace(f"$\x7bkey\x7ds", "{record[key]}")
+        elif self.style == '{':
+            record["message"] = f"{temp}"
+        else:
+            for key in record.keys():
+                temp = temp.replace(f"%({key})s", f"{record[key]}")
     # datetime
     def fomatTime(self, record, datefmt=None):
         dt = datetime.now()
@@ -43,19 +55,34 @@ class Formatter():
         return True
     def formatStack(self, stack_info):
         return traceback.extract_stack(f=inspect.stack(), limit=1)
+    def formatHeader(self, records):
+        return records
+    def formatFooter(self, records):
+        return records
     # Gate
     def format(self, record):
-        # torch.Tensor?
-        self.formatMessage(record)
         # %(asctime)s
         self.fomatTime(record, datefmt=self.datefmt)
+        # %(message)s
+        self.formatMessage(record)
         # ^^;
         return record
 
+class BufferingFormatter(Formatter):
+    def __init__(self, linefmt=None, *args, **kwargs) -> None:
+        super(BufferingFormatter, self).__init__(*args, **kwargs)
+        # Formats
+        self.linefmt = str(linefmt) if linefmt is not None else None
+    def formatHeader(self, records):
+        return records
+    def formatFooter(self, records):
+        return records
+
 ######################################################################
-# Classes - Formatter
+# Classes - LogRecord
+
 class LogRecord(dict):
-    def __init__(self, name=None, level=None, fn=None, lno=None, msg=None, exc_info=None, func=None, extra=None, sinfo=None, *args, **kwargs) -> dict:
+    def __init__(self, name=None, level=None, fn=None, lno=None, msg=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs) -> dict:
         super(LogRecord, self).__init__(kwargs)
         self["stack_info"]      = inspect.stack()
         self["module"] = str(self["stack_info"][1].frame.f_globals.get("__name__", "__main__"))
@@ -68,14 +95,14 @@ class LogRecord(dict):
         self["args"]            = args                            # %(args)s
         self["asctime"]         = None                            # %(asctime)s
         self["created"]         = (time.time_ns()/1e-9)           # %(created)s
-        self["exc_info"]        = exc_info if exc_info is not None else None
+        self["exc_info"]        = sys.exc_info() if exc_info is True else None
         #self["filename"]        = filename                        # %(filename)s
         #self["funcName"]        = None                            # %(funcName)s
         self["level"]           = level                           # %(levelname)s
         self["levelname"]       = LEVEL_LOG[level]                # %(levelname)s
         self["levelno"]         = level                           # %(levelno)s
         #self["lineno"]          = lineno                          # %(lineno)s
-        self["message"]         = str(msg)                        # %(message)s
+        self["message"]         = None                            # %(message)s
         #self["module"]          = None                            # %(module)s
         self["msecs"]           = datetime.now().strftime("%f")   # %(msecs)s
         self["msg"]             = str(msg)
@@ -91,18 +118,15 @@ class LogRecord(dict):
         self["thread"]          = threading.get_ident()           # %(thread)s
         self["threadName"]      = threading.current_thread().name # %(threadName)s
         # Limit Break (2)
-        #try:
-        #    import asyncio
-        #    task = asyncio.current_task()
-        #    self["taskName"] = task.get_name() if task else None
-        #except Exception:
-        #    self["taskName"] = None
-        self["taskName"] = None
-        # getMessage()
-        def getMessage(self, msg):
-            self["message"] += str(msg)
-            self["msg"] += str(msg)
-            return self["msg"]
+        #self["taskName"] = None
+        try:
+            task = asyncio.current_task()
+            self["taskName"] = task.get_name() if task else None
+        except Exception:
+            self["taskName"] = None
+    # getMessage()
+    def getMessage(self):
+        return self["msg"] % self["args"]
 
 ######################################################################
 # MAIN
@@ -112,7 +136,7 @@ if __name__ == "__main__":
 
 #=====================================================================
 # ALL - Make it directly accessible from the top level of the package
-__all__ = ["Formatter", "LogRecoprd"]
+__all__ = ["Formatter", "BufferingFormatter", "LogRecoprd"]
 
 """ __DATA__
 

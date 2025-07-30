@@ -152,7 +152,7 @@ if __name__ == "__main__":
 
 #=====================================================================
 # ALL - Make it directly accessible from the top level of the package
-__all__ = ["logger", "NOTSET", "DEBUG", "INFO", "WARN", "WARNING", "ERROR", "CRITICAL", "NOTICE", "MATTER", "MATTER"]
+__all__ = ["logger", "NOTSET", "DEBUG", "INFO", "WARN", "WARNING", "ERROR", "CRITICAL", "NOTICE", "MATTER"]
 
 """ __DATA__
 
