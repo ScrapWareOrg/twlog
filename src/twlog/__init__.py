@@ -26,7 +26,8 @@ from twlog.util.ANSIColor import ansi
 from twlog.util.Code import *
 from twlog.BasicConfig import basicConfig, basicConfig_lock, basicConfig_done, basicConfig_true
 from twlog.Filters import Filter
-from twlog.Formatters import Formatter, LogRecord
+from twlog.Formatters import Formatter
+from twlog.LogRecord import LogRecord
 from twlog.Handlers import Handler
 from twlog.Handlers.ANSI import ANSIHandler
 from twlog.Handlers.File import FileHandler, BufferedFileHandler

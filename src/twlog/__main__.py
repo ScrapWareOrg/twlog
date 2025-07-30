@@ -7,15 +7,7 @@ import twlog
 import twlog.util
 
 from twlog import *
-from twlog.util.ANSIColor import ansi
 from twlog.util.Code import *
-from twlog.Filters import Filter
-from twlog.Formatters import Formatter, LogRecord
-from twlog.Handlers import Handler
-from twlog.Handlers.ANSI import ANSIHandler
-
-#####################################################################
-# CODE
 
 ######################################################################
 # MAIN

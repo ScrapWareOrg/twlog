@@ -7,7 +7,6 @@ import shutil
 # LIBS
 
 from twlog.util.Code import *
-from twlog.Formatters import Formatter, LogRecord
 from twlog.Handlers import Handler
 
 ######################################################################
@@ -21,7 +20,7 @@ class StreamHandler(Handler):
         self.stream_err = stream_err if stream_err is not None else sys.stderr
         self.terminator = '\n'
     def emit(self, record):
-        # Fromat
+        # Format
         record = self.format(record)
         # Initialize
         mf = f"{record['asctime']} |{record['name']}| {record['message']}"

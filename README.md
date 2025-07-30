@@ -54,22 +54,26 @@ twlog.pixie("Status", "Data processing complete!")
 
 Impremented Features.
 
+### Compatible Imprements
+ * **root(*RootLogger*)**: ...
+ * **BasicConfig**: ...
+ * **LogRecord**: ...
+
 ### Handlers
  * **NullHandler**: Null handler.
- * **StreamHandler**: sys.stdin, sys.stderr
  * **ANSIHandler(*Defaults*)**: sys.stdout, coloring with ANSI code
+ * **StreamHandler**: sys.stdin, sys.stderr
  * **FileHandler**: filehandle
  * **BufferedFileHandler**: filehandle, write on last(destruction).
  * **NullHandler**: Null handler.
  * **ChatGpt.SysLogHandler**: (Nothing) Output for Syslog, Yet Another Direction?
 
-### Compatible Imprements
- * **LogRecord**: ...
+### Compatible Imprements (*Yet Another*)
+ * **Formatter**: Default Formatter.
+ * **ANSIFormatter**: ANSI Formatter (Colorful, Use on ANSIHandler)
 
 ### Compatible Imprements (*Yet Another*)
- * **Formatter**: from now on...
- * **Filter**: Empty yet.
- * **BasicConfig**: from now on...
+ * **Filter**: Empty template yet, Working from now on...? (or appending yourself)
 
 ### Logging Messages
 

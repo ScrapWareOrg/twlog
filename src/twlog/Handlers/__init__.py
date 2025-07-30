@@ -4,7 +4,7 @@
 # LIBS
 
 from twlog.util.Code import *
-from twlog.Formatters import Formatter, LogRecord
+from twlog.Formatters import Formatter
 
 ######################################################################
 # Classes - handlers
@@ -26,6 +26,9 @@ class Handler():
     # Level
     def setLevel(self, level: int = 0):
         self.level = level if level in LOG_LEVEL else self.INFO
+    # Formatter
+    def setFormatter(self, fmt: Formatter = None):
+        self.formatter = fmt if fmt is not None else None
     # Filters
     def addFilter(self, filter):
         self.filter = filter if filter is not None else None
@@ -42,9 +45,6 @@ class Handler():
         return True
     def handleError(self, record):
         return True
-    # Formatter
-    def setFormatter(self, fmt: Formatter = None):
-        self.formatter = fmt if fmt is not None else None
     def format(self, record):
         return self.formatter.format(record)
     def emit(self, record):

@@ -10,7 +10,8 @@ import threading
 from twlog.util.ANSIColor import ansi
 from twlog.util.Code import *
 from twlog.Filters import Filter
-from twlog.Formatters import Formatter, LogRecord
+from twlog.Formatters import Formatter
+from twlog.Formatters.ANSI import ANSIFormatter
 from twlog.Handlers import Handler
 from twlog.Handlers.ANSI import ANSIHandler
 from twlog.Handlers.File import FileHandler, BufferedFileHandler
@@ -46,8 +47,10 @@ def basicConfig_true():
 ######################################################################
 # CODE
 
-_basicConfig["handlers"] = [ANSIHandler(level=INFO)]
-_basicConfig["formatter"] =  Formatter()
+_basicConfig["handlers_ansi"] = [ANSIHandler(level=INFO, stream=sys.stdout, stream_err=sys.stderr, markup=True, rich_tracebacks=True)]
+_basicConfig["formatter_ansi"] = ANSIFormatter(fmt=_basicConfig["fmt"], datefmt=_basicConfig["datefmt"], markup=True, rich_tracebacks=True)
+_basicConfig["handlers"] = [StreamHandler(level=INFO, stream=sys.stdout, stream_err=sys.stderr)]
+_basicConfig["formatter"] = Formatter(fmt=_basicConfig["fmt"], datefmt=_basicConfig["datefmt"])
 _basicConfig["filter"] =  Filter()
 for h in range(len(_basicConfig["handlers"])):
     _basicConfig["handlers"][h].setFormatter(_basicConfig["formatter"])
@@ -61,13 +64,21 @@ def basicConfig(filename=None, filemode='a', format: str = _basicConfig["fmt"], 
     if handlers is None or len(handlers) == 0:
         if filename is not None:
             _basicConfig["handlers"] = [FileHandler(level=INFO, filename=filename, mode=filemode, encoding=encoding, delay=False, errors=errors)]
+            _basicConfig["handlers"][0].setFormatter(_basicConfig["formatter"])
         else:
             stream = stream if stream is not None else sys.stdout
-            _basicConfig["handlers"] = [ANSIHandler(level=INFO, stream=sys.stdout, stream_err=sys.stderr, markup=True, rich_tracebacks=True)]
+            _basicConfig["handlers"] = _basicConfig["handlers_ansi"]
+            _basicConfig["handlers"][0].setFormatter(_basicConfig["formatter_ansi"])
+            #_basicConfig["handlers"] = _basicConfig["handlers"]
+            #_basicConfig["handlers"][0].setFormatter(_basicConfig["formatter"])
+            _basicConfig["handlers"][0].addFilter(_basicConfig["filter"])
+    else:
+        _basicConfig["handlers"] = handlers
     # Formatter
     _basicConfig["formatter"] = Formatter(fmt=_basicConfig["fmt"], datefmt=_basicConfig["datefmt"])
     for h in range(len(_basicConfig["handlers"])):
-        _basicConfig["handlers"][h].setFormatter(_basicConfig["formatter"])
+        if _basicConfig["handlers"][h].formatter is None:
+            _basicConfig["handlers"][h].setFormatter(_basicConfig["formatter"])
     # ^^;
     return _basicConfig.copy()
 

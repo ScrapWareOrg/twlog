@@ -9,7 +9,6 @@ import shutil
 # LIBS
 
 from twlog.util.Code import *
-from twlog.Formatters import Formatter, LogRecord
 from twlog.Handlers import Handler
 
 ######################################################################
@@ -31,7 +30,7 @@ class FileHandler(Handler):
         else:
             self.f = None
     def emit(self, record):
-        # Fromat
+        # Format
         record = self.format(record)
         # Initialize
         mf = f"{record['asctime']} |{record['name']}| {record['message']}"
@@ -77,7 +76,7 @@ class BufferedFileHandler(Handler):
     def getBinder(self):
         return self.binder.copy()
     def emit(self, record):
-        # Fromat
+        # Format
         record = self.format(record)
         # Initialize
         mf = f"{record['asctime']} |{record['name']}| {record['message']}"

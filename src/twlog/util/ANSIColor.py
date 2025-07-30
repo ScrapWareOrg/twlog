@@ -1,8 +1,11 @@
 #!/home/twinkle/venv/bin/python
 
+import re
+
 ######################################################################
-# Class
-class ansi():
+# CLASS
+
+class ansi:
     # start (0x1b), reset
     start = "\x1b["
     reset = "\x1b[0m"
@@ -55,6 +58,23 @@ class ansi():
     text_off_r4everse  = "27"
 
 ######################################################################
+# DEFS
+
+# ANSI Counter
+def ansilen(msg):
+   mall = re.findall("\x1b\[[0-9;]+m", msg)
+   if mall is None:
+       return 0
+   mstr = ''.join(mall)
+   mlen = len(mstr)
+   return mlen
+# Ignore ANSI Counter
+def strlen(msg):
+   slen = len(msg)
+   mlen = ansilen(msg)
+   return slen - mlen
+
+######################################################################
 # MAIN
 if __name__ == "__main__":
     print(f"[{__name__}]")
@@ -62,7 +82,7 @@ if __name__ == "__main__":
 
 #=====================================================================
 # ALL - Make it directly accessible from the top level of the package
-__all__ = ["ansi"]
+__all__ = ["ansi", "ansilen", "strlen"]
 
 """ __DATA__
 
