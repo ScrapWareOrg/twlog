@@ -33,43 +33,33 @@ class LogRecord(object):
         self.level           = level                           # %(levelname)s
         self.levelname       = LEVEL_LOG[level]                # %(levelname)s
         self.levelno         = level                           # %(levelno)s
-        self.pathname = pathname
+        self.pathname        = pathname                        # %(pathname)s
         try:
-            self.filename     = os.path.basename(pathname)
-            self.module       = os.path.splitext(self.filename)[0]
+            self.filename    = os.path.basename(pathname)      # %(filename)s
+            self.module      = os.path.splitext(self.filename)[0]
         except:
-            self.filename     = pathname
-            self.module       = 'unknown'
-        #self.module          = None                            # %(module)s
-        self.stack_info       = sinfo
-        #self.lineno          = lineno                          # %(lineno)s
-        self.lineno           = lineno
-        self.funcName         = func
+            self.filename    = pathname                        # %(filename)s
+            self.module      = 'unknown'                       # %(module)s
+        self.stack_info      = sinfo                           # %(stack_info)s
+        self.lineno          = lineno                          # %(lineno)s
+        self.funcName        = func                            # %(funcName)s
         # exc_info
-        if exc_info is True:
-            sexc_type, exc_value, exc_traceback = sys.exc_info()
-            self.exc_info    = (sexc_type, exc_value, exc_traceback)
-        else:
-            self.exc_info = None
-        self.exc_text = None                                   # %(exc_text)s
-        
+        self.exc_info        = exc_info                        # %(exc_info)s
+        self.exc_text        = None                            # %(exc_text)s
         self.args            = args                            # %(args)s
         self.asctime         = None                            # %(asctime)s
         self.created         = curr                            # %(created)
         self.relativeCreated = (curr- _startTime) * 1000       # %(created)
-        #self.filename        = filename                        # %(filename)s
-        #self.funcName        = None                            # %(funcName)s
         self.message         = None                            # %(message)s
         self.msecs           = int((curr - curr) * 1000) + 0.0 # %(msecs)s
         self.msg             = str(msg)
         self.name            = str(name)                       # %(name)s
-        #self.pathname        = pathname                        # %(pathname)s
         self.process         = os.getpid()                     # %(process)s
         # if wants Limit Break(1) -> use and replace for psutio and other modules.
         try:
             self.processName = os.path.basename(sys.argv[0])   # %(processName)s
         except:
-            self.processName = 'python'                # %(processName)s
+            self.processName = 'python'                        # %(processName)s
         self.relativeCreated = os.getppid()                    # %(relativeCreated)s
         self.thread          = threading.get_ident()           # %(thread)s
         self.threadName      = threading.current_thread().name # %(threadName)s
@@ -77,9 +67,9 @@ class LogRecord(object):
         #self.taskName = None
         try:
             task = asyncio.current_task()
-            self.taskName = task.get_name() if task else None
+            self.taskName = task.get_name() if task else None  # %(taskName)s
         except Exception:
-            self.taskName = None
+            self.taskName = None                               # %(taskName)s
     # getMessage()
     def getMessage(self):
         return self.msg % self.args

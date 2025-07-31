@@ -1,7 +1,6 @@
 #!/home/twinkle/venv/bin/python
 
 import sys
-import shutil
 
 ######################################################################
 # LIBS
@@ -22,21 +21,8 @@ class StreamHandler(Handler):
     def emit(self, record):
         # Format
         record = self.format(record)
-        # Initialize
-        mf = record.message
-        ml = len(mf)
-        # filename and lineno
-        if record.level >= 30:
-            fl = f" ({record.filename}:{record.lineno})"
-            ml += len(fl)
-            ts = shutil.get_terminal_size().columns
-            df = ts - ml
-            if df > 0: mf += (" " * df)
-            mf += fl
-            print(mf, file=self.stream_err)
         # ^^;
-        else:
-            print(mf, file=self.stream)
+        print(record.message, file=self.stream)
     # Testing
     def flush(self):
         return True

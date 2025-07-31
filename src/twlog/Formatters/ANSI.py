@@ -1,5 +1,7 @@
 #!/home/twinkle/venv/bin/python
 
+import shutil
+
 import inspect
 import traceback
 
@@ -8,7 +10,7 @@ from datetime import datetime
 ######################################################################
 # LIBS
 
-from twlog.util.ANSIColor import ansi
+from twlog.util.ANSIColor import ansi, ansilen, strlen
 from twlog.util.Code import *
 from twlog.Formatters import Formatter
 
@@ -57,6 +59,21 @@ class ANSIFormatter(Formatter):
             for key in rkey:
                 temp = temp.replace(f"%({key})s", f"{rdic[key]}")
         record.message = temp
+        ml = strlen(record.message)
+        # filename and lineno
+        if record.level >= 30:
+            fl = f"({record.filename}:{record.lineno})"
+            ml += strlen(fl)
+            ts = shutil.get_terminal_size().columns
+            df = ts - ml
+            if df > 0: record.message += (" " * df)
+            record.message += fl
+        # exc_info
+        if record.exc_info is not None:
+            record.message += f"\n{record.exc_info}"
+        # sinfo
+        if record.stack_info is not None:
+            record.message += f"\n{record.stack_info}"
     # datetime
     def fomatTime(self, record, datefmt=None):
         # DateTime

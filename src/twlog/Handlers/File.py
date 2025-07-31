@@ -2,8 +2,8 @@
 
 import os
 import sys
+
 import locale
-import shutil
 
 ######################################################################
 # LIBS
@@ -32,24 +32,13 @@ class FileHandler(Handler):
     def emit(self, record):
         # Format
         record = self.format(record)
-        # Initialize
-        mf = record.message
-        ml = len(mf)
-        # filename and lineno
-        if record.level >= 30:
-            fl = f" ({record.filename}:{record.lineno})"
-            ml += len(fl)
-            ts = shutil.get_terminal_size().columns
-            df = ts - ml
-            if df > 0: mf += (" " * df)
-            mf += fl
         # ^^;
         if delay is True:
             with open(self.filename, mode=self.mode, encoding=self.encoding, buffering=self.delay, errors=self.errors):
-                print(mf, file=self.f)
+                print(record.message, file=self.f)
         # ^^;
         else:
-            print(mf, file=self.f)
+            print(record.message, file=self.f)
     def flush(self):
         if delay is False:
             self.f.flush()
@@ -78,19 +67,8 @@ class BufferedFileHandler(Handler):
     def emit(self, record):
         # Format
         record = self.format(record)
-        # Initialize
-        mf = record.message
-        ml = len(mf)
-        # filename and lineno
-        if record.level >= 30:
-            fl = f" ({record.filename}:{record.lineno})"
-            ml += len(fl)
-            ts = shutil.get_terminal_size().columns
-            df = ts - ml
-            if df > 0: mf += (" " * df)
-            mf += fl
         # ^^;
-        self.binder.appends(mf + "\n")
+        self.binder.appends(record.message + "\n")
     def flush(self):
         with open(self.filename, mode=self.mode, encoding=self.encoding, buffering=False, errors=self.errors):
             print(self.binder, file=self.f)

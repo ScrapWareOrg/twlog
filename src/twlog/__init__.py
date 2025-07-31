@@ -2,6 +2,7 @@
 
 import os
 import sys
+import io
 import threading
 import re
 
@@ -108,10 +109,10 @@ class root():
         caller_frame = inspect.currentframe().f_back
         caller_class = caller_frame.f_locals.get('self', None).__class__
         return caller_class.__module__
-    #========================================
-    # Caller
-    def findCaller2(self, stack_info=False, stacklevel=1):
+    # Caller Stack
+    def findCaller(self, stack_info=False, stacklevel=1):
         stack     = inspect.stack()
+        sleng     = len(stack)
         #module    = str(stack[1].frame.f_globals.get("__name__", "__main__"))
         funcName  = str(stack[1].frame.f_code.co_name)
         pathname  = str(stack[1].filename)
@@ -119,50 +120,21 @@ class root():
         lineno    = str(stack[1].lineno)
         if not pathname.endswith(".py"):
             pathname += ".py"
-        if stack_info is not False:
-            return (pathname, lineno, funcName, str(stack))
-        else:
-            return (pathname, lineno, funcName, None)
-    def findCaller(self, stack_info=False, stacklevel=1):
-        """
-        Find the stack frame of the caller so that we can note the source
-        file name, line number and function name.
-        """
-        _srcfile = os.path.normcase(__file__)
-        def _is_internal_frame(frame):
-            """Signal whether the frame is a CPython or logging module internal."""
-            filename = os.path.normcase(frame.f_code.co_filename)
-            return filename == _srcfile or (
-            "importlib" in filename and "_bootstrap" in filename
-        )
-        f = inspect.currentframe()
-        #On some versions of IronPython, currentframe() returns None if
-        #IronPython isn't run with -X:Frames.
-        if f is None:
-            return "(unknown file)", 0, "(unknown function)", None
-        while stacklevel > 0:
-            next_f = f.f_back
-            if next_f is None:
-                ## We've got options here.
-                ## If we want to use the last (deepest) frame:
-                break
-                ## If we want to mimic the warnings module:
-                #return ("sys", 1, "(unknown function)", None)
-                ## If we want to be pedantic:
-                #raise ValueError("call stack is not deep enough")
-            f = next_f
-            if not _is_internal_frame(f):
-                stacklevel -= 1
-        co = f.f_code
-        sinfo = None
-        if stack_info:
+        if stack_info is True:
+            sinfo = None
+            for i in range(sleng):
+                p = stack[i].filename
+                if p == __file__ or ("importlib" in p and "_bootstrap" in p):
+                    stacklevel -= 1
             with io.StringIO() as sio:
                 sio.write("Stack (most recent call last):\n")
-                traceback.print_stack(f, file=sio)
+                traceback.print_stack(stack[(stacklevel+1)].frame, file=sio)
                 sinfo = sio.getvalue()
                 if sinfo[-1] == '\n':
                     sinfo = sinfo[:-1]
-        return co.co_filename, f.f_lineno, co.co_name, sinfo
+            return (pathname, lineno, funcName, sinfo)
+        else:
+            return (pathname, lineno, funcName, None)
     def makeRecord(self, name, level, pathname, lineno, msg, exc_info=None, func=None, extra=None, sinfo=None, *args, **kwargs):
         return LogRecord(name=name, level=level, pathname=pathname, lineno=lineno, msg=msg, exc_info=exc_info, func=func, extra=extra, sinfo=sinfo, *args, **kwargs)
     #========================================
@@ -183,7 +155,7 @@ class root():
         else: msg = str(msg)
         return msg
     # Promise for Console
-    def _log(self, msg:any = None, level: int = 20, title: str = None, exc_info=True, func=None, extra=None, sinfo=False, *args, **kwargs):
+    def _log(self, msg:any = None, level: int = 20, title: str = None, exc_info=False, func=None, extra=None, sinfo=False, *args, **kwargs):
         # Title Setting
         title = str(title) if title is not None else self.name.upper()
         level = level if level is not None else self.level
@@ -192,7 +164,7 @@ class root():
         # stack_info
         (pathname, lineno, funcName, stack_info) = self.findCaller(stack_info=sinfo, stacklevel=1)
         # exc_info
-        exc_args = sys.exc_info() if exc_info is True else None 
+        exc_args = sys.exc_info() if exc_info is True else None
         # to makeRecord
         records = self.makeRecord(title, level, pathname, lineno, msg, exc_info=exc_args, func=funcName, extra=extra, sinfo=stack_info, *args, **kwargs)
         # Handlers

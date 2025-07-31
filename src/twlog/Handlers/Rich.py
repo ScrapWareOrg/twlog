@@ -1,7 +1,6 @@
 #!/home/twinkle/venv/bin/python
 
 import sys
-import shutil
 
 ######################################################################
 # LIBS
@@ -27,21 +26,8 @@ class RichHandler(Handler):
     def emit(self, record):
         # Format
         record = self.format(record)
-        # Initialize
-        mf = record.message
-        ml = strlen(mf)
-        # filename and lineno
-        if record.level >= 30:
-            fl = f"{ansi.start}{ansi.fore_white}m{record.filename}:{record.lineno}{ansi.reset}"
-            ml += strlen(fl)
-            ts = shutil.get_terminal_size().columns
-            df = ts - ml
-            if df > 0: mf += (" " * df)
-            mf += fl
-            print(mf, file=self.stream_err)
         # ^^;
-        else:
-            print(mf, file=self.stream)
+        print(record.message, file=self.stream)
     def flush(self):
         return True
     def setStrteam(self, stream):
