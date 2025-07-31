@@ -15,28 +15,28 @@ from twlog.Formatters import Formatter
 ######################################################################
 # CLASSES - Formatter
 
-class ANSIFormatter(Formatter):
+class RichFormatter(Formatter):
     def __init__(self, fmt="%(asctime)s %(levelname)s %(message)s", datefmt="[%Y-%m-%d %H:%M:%S]", style='%', validate=True, defaults=None, markup=True, rich_tracebacks=True, *args, **kwargs) -> None:
-        super(ANSIFormatter, self).__init__(fmt=fmt, datefmt=datefmt, style=style, validate=validate, defaults=defaults, *args, **kwargs)
+        super(RichFormatter, self).__init__(fmt=fmt, datefmt=datefmt, style=style, validate=validate, defaults=defaults, *args, **kwargs)
         self.markup = True if markup is True else False
         self.rich_tracebacks = True if rich_tracebacks is True else False
     def formatLevelName(self, record):
         if record.level == DEBUG:
-            temp = f"{ansi.start}{ansi.back_light_gray};{ansi.fore_white};{ansi.text_on_bold}m"
+            temp = f"{ansi.start}{ansi.fore_green}m"
         elif record.level == WARN:
-            temp = f"{ansi.start}{ansi.back_yellow};{ansi.fore_white};{ansi.text_on_bold}m"
+            temp = f"{ansi.start}m"
         elif record.level == ERROR:
-            temp = f"{ansi.start}{ansi.back_red};{ansi.fore_white};{ansi.text_on_bold}m"
+            temp = f"{ansi.start}{ansi.fore_red};{ansi.text_on_bold}m"
         elif record.level == CRITICAL:
             temp = f"{ansi.start}{ansi.back_light_red};{ansi.text_on_bold};{ansi.fore_black}m"
         elif record.level == NOTICE:
-            temp = f"{ansi.start}{ansi.back_green};{ansi.fore_white};{ansi.text_on_bold}m"
+            temp = f"{ansi.start}m"
         elif record.level == ISSUE:
-            temp = f"{ansi.start}{ansi.back_purple};{ansi.fore_white};{ansi.text_on_bold}m"
+            temp = f"{ansi.start}m"
         elif record.level == MATTER:
-            temp = f"{ansi.start}{ansi.back_light_white};{ansi.text_on_bold};{ansi.fore_black}m"
+            temp = f"{ansi.start}m"
         else: # Defaults (INFO)
-            temp = f"{ansi.start}{ansi.back_blue};{ansi.fore_white};{ansi.text_on_bold}m"
+            temp = f"{ansi.start}{ansi.fore_blue}m"
         spsp = " " * (8 - len(record.levelname))
         record.levelname = f"{temp}" + record.levelname + f"{spsp}{ansi.reset}"
     def formatMessage(self, record):
@@ -67,15 +67,15 @@ class ANSIFormatter(Formatter):
             if record.level == DEBUG:
                 temp = f"{ansi.start}{ansi.fore_white}m"
             elif record.level == WARN:
-                temp = f"{ansi.start}{ansi.fore_light_yellow}m"
+                temp = f"{ansi.start}{ansi.fore_yellow}m"
             elif record.level == ERROR:
-                temp = f"{ansi.start}{ansi.fore_light_red}m"
+                temp = f"{ansi.start}{ansi.fore_red}m"
             elif record.level == CRITICAL:
                 temp = f"{ansi.start}{ansi.fore_red}m"
             elif record.level == NOTICE:
-                temp = f"{ansi.start}{ansi.fore_light_green}m"
+                temp = f"{ansi.start}{ansi.fore_green}m"
             elif record.level == ISSUE:
-                temp = f"{ansi.start}{ansi.fore_light_magenta}m"
+                temp = f"{ansi.start}{ansi.fore_purple}m"
             elif record.level == MATTER:
                 temp = f"{ansi.start}{ansi.fore_white}m"
             else: # Defaults (INFO)
@@ -110,7 +110,7 @@ if __name__ == "__main__":
 
 #=====================================================================
 # ALL - Make it directly accessible from the top level of the package
-__all__ = ["ANSIFormatter"]
+__all__ = ["RichFormatter"]
 
 """ __DATA__
 

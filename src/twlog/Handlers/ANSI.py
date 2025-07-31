@@ -28,12 +28,12 @@ class ANSIHandler(Handler):
         # Format
         record = self.format(record)
         # Initialize
-        mf = record['message']
+        mf = record.message
         ml = strlen(mf)
         # filename and lineno
-        if record["level"] >= 30:
-            fl = f" ({record['filename']}:{record['lineno']})"
-            ml += len(fl)
+        if record.level >= 30:
+            fl = f"({record.filename}:{record.lineno})"
+            ml += strlen(fl)
             ts = shutil.get_terminal_size().columns
             df = ts - ml
             if df > 0: mf += (" " * df)

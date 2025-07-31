@@ -33,16 +33,16 @@ class FileHandler(Handler):
         # Format
         record = self.format(record)
         # Initialize
-        mf = f"{record['asctime']} |{record['name']}| {record['message']}"
+        mf = record.message
         ml = len(mf)
         # filename and lineno
-        if record["level"] >= 30:
-            fl = f" ({record['filename']}:{record['lineno']})"
+        if record.level >= 30:
+            fl = f" ({record.filename}:{record.lineno})"
             ml += len(fl)
             ts = shutil.get_terminal_size().columns
             df = ts - ml
             if df > 0: mf += (" " * df)
-            mf += flr
+            mf += fl
         # ^^;
         if delay is True:
             with open(self.filename, mode=self.mode, encoding=self.encoding, buffering=self.delay, errors=self.errors):
@@ -79,16 +79,16 @@ class BufferedFileHandler(Handler):
         # Format
         record = self.format(record)
         # Initialize
-        mf = f"{record['asctime']} |{record['name']}| {record['message']}"
+        mf = record.message
         ml = len(mf)
         # filename and lineno
-        if record["level"] >= 30:
-            fl = f" ({record['filename']}:{record['lineno']})"
+        if record.level >= 30:
+            fl = f" ({record.filename}:{record.lineno})"
             ml += len(fl)
             ts = shutil.get_terminal_size().columns
             df = ts - ml
             if df > 0: mf += (" " * df)
-            mf += flr
+            mf += fl
         # ^^;
         self.binder.appends(mf + "\n")
     def flush(self):

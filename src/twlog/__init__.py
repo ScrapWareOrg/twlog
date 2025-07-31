@@ -84,14 +84,12 @@ class root():
         for h in range(len(self.handlers)):
             if hdlr == self.handlers[h]:
                 self.handler.pop(h); break
+    def hasHandlers(self):
+        return True if len(self.handlers) != 0 else False
     def handle(self, record):
         for h in range(len(self.handlers)):
             self.handlers[h].emit(record)
-    def makeRecord(self, name, level, fn, lno, msg, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
-        return LogRecord(name=name, level=level, fn=None, lno=None, msg=msg, exc_info=exc_info, func=func, extra=extra, sinfo=sinfo)
-    def hasHandlers(self):
-        return True if len(self.handlers) != 0 else False
-    ##==========
+    #========================================
     ## Not yet
     def addFilter(self, *args, **kwargs):
         return True
@@ -99,12 +97,81 @@ class root():
         return True
     def filter(self, record):
         return record
-    ##==========
-    # Caller
-    def findCaller(self, stack_info=False, stack_level=1):
+    #========================================
+    # Caller Name
+    def findCallerName(self):
         caller_frame = inspect.currentframe().f_back
         caller_class = caller_frame.f_locals.get('self', None).__class__
         return caller_class.__name__
+    # Caller Module
+    def findCallerModule(self):
+        caller_frame = inspect.currentframe().f_back
+        caller_class = caller_frame.f_locals.get('self', None).__class__
+        return caller_class.__module__
+    #========================================
+    # Caller
+    def findCaller2(self, stack_info=False, stacklevel=1):
+        stack     = inspect.stack()
+        #module    = str(stack[1].frame.f_globals.get("__name__", "__main__"))
+        funcName  = str(stack[1].frame.f_code.co_name)
+        pathname  = str(stack[1].filename)
+        #filename  = os.path.basename(self.pathname)
+        lineno    = str(stack[1].lineno)
+        if not pathname.endswith(".py"):
+            pathname += ".py"
+        if stack_info is not False:
+            return (pathname, lineno, funcName, str(stack))
+        else:
+            return (pathname, lineno, funcName, None)
+    def findCaller(self, stack_info=False, stacklevel=1):
+        """
+        Find the stack frame of the caller so that we can note the source
+        file name, line number and function name.
+        """
+        _srcfile = os.path.normcase(__file__)
+        def _is_internal_frame(frame):
+            """Signal whether the frame is a CPython or logging module internal."""
+            filename = os.path.normcase(frame.f_code.co_filename)
+            return filename == _srcfile or (
+            "importlib" in filename and "_bootstrap" in filename
+        )
+        f = inspect.currentframe()
+        #On some versions of IronPython, currentframe() returns None if
+        #IronPython isn't run with -X:Frames.
+        if f is None:
+            return "(unknown file)", 0, "(unknown function)", None
+        while stacklevel > 0:
+            next_f = f.f_back
+            if next_f is None:
+                ## We've got options here.
+                ## If we want to use the last (deepest) frame:
+                break
+                ## If we want to mimic the warnings module:
+                #return ("sys", 1, "(unknown function)", None)
+                ## If we want to be pedantic:
+                #raise ValueError("call stack is not deep enough")
+            f = next_f
+            if not _is_internal_frame(f):
+                stacklevel -= 1
+        co = f.f_code
+        sinfo = None
+        if stack_info:
+            with io.StringIO() as sio:
+                sio.write("Stack (most recent call last):\n")
+                traceback.print_stack(f, file=sio)
+                sinfo = sio.getvalue()
+                if sinfo[-1] == '\n':
+                    sinfo = sinfo[:-1]
+        return co.co_filename, f.f_lineno, co.co_name, sinfo
+    def makeRecord(self, name, level, pathname, lineno, msg, exc_info=None, func=None, extra=None, sinfo=None, *args, **kwargs):
+        return LogRecord(name=name, level=level, pathname=pathname, lineno=lineno, msg=msg, exc_info=exc_info, func=func, extra=extra, sinfo=sinfo, *args, **kwargs)
+    #========================================
+    # Override
+    def process(self, msg, **kwargs):
+        return (msg, kwargs)
+    def manager(self):
+        return
+    #========================================
     # Array Disaddembly
     def msg_disassembly(self, msg):
         if hasattr(msg, 'tolist'):
@@ -116,13 +183,18 @@ class root():
         else: msg = str(msg)
         return msg
     # Promise for Console
-    def logging(self, msg:any = None, level: int = 20, title: str = None, exc_info=True, func=None, extra=None, sinfo=None, *args, **kwargs):
+    def _log(self, msg:any = None, level: int = 20, title: str = None, exc_info=True, func=None, extra=None, sinfo=False, *args, **kwargs):
         # Title Setting
         title = str(title) if title is not None else self.name.upper()
         level = level if level is not None else self.level
         # numpy.ndarray, torch.Tensor, Jax, ...
         msg = msg if isinstance(msg, str) else self.msg_disassembly(msg)
-        records = self.makeRecord(title, level, None, None, msg, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
+        # stack_info
+        (pathname, lineno, funcName, stack_info) = self.findCaller(stack_info=sinfo, stacklevel=1)
+        # exc_info
+        exc_args = sys.exc_info() if exc_info is True else None 
+        # to makeRecord
+        records = self.makeRecord(title, level, pathname, lineno, msg, exc_info=exc_args, func=funcName, extra=extra, sinfo=stack_info, *args, **kwargs)
         # Handlers
         self.handle(records)
     def test(self, msg: any = None):
@@ -133,39 +205,39 @@ class root():
     def log(self, msg:any = None, level: int = 20, title: str = None, exc_info=True, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else 'LOG'
         if self.propagate is True and self.parent is not None:
-            self.parent.logging(msg=msg, level=level, title=title, exc_info=False, func=None, extra=None, sinfo=None)
-        self.logging(msg=msg, level=level, title=title, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
+            self.parent._log(msg=msg, level=level, title=title, exc_info=False, func=None, extra=None, sinfo=None)
+        self._log(msg=msg, level=level, title=title, exc_info=exc_info, func=func, extra=extra, sinfo=sinfo, *args, **kwargs)
     # Exception (ERROR)
     def exception(self, msg:any = None, title: str = None, exc_info=True, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else 'EXCEPT'
         if self.propagate is True and self.parent is not None:
-            self.parent.logging(msg=msg, level=ERROR, title=title, exc_info=True, func=None, extra=None, sinfo=None, *args, **kwargs)
-        self.logging(msg=msg, level=ERROR, title=title, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
+            self.parent._log(msg=msg, level=ERROR, title=title, exc_info=True, func=None, extra=None, sinfo=None, *args, **kwargs)
+        self._log(msg=msg, level=ERROR, title=title, exc_info=exc_info, func=func, extra=extra, sinfo=sinfo, *args, **kwargs)
     # Wrappers
-    def debug(self, msg:any = None, level=10, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
+    def debug(self, msg:any = None, level=10, title=None, exc_info=True, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else 'DEBUG'
-        self.logging(msg=msg, level=level, title=title, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
+        self._log(msg=msg, level=level, title=title, exc_info=exc_info, func=func, extra=extra, sinfo=sinfo, *args, **kwargs)
     def info(self, msg:any = None, level=20, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else 'INFO'
-        self.logging(msg=msg, level=level, title=title, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
+        self._log(msg=msg, level=level, title=title, exc_info=exc_info, func=func, extra=extra, sinfo=sinfo, *args, **kwargs)
     def warn(self, msg:any = None, level=30, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else 'WARN'
-        self.logging(msg=msg, level=level, title=title, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
+        self._log(msg=msg, level=level, title=title, exc_info=exc_info, func=func, extra=extra, sinfo=sinfo, *args, **kwargs)
     def error(self, msg:any = None, level=40, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else 'ERROR'
-        self.logging(msg=msg, level=level, title=title, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
+        self._log(msg=msg, level=level, title=title, exc_info=exc_info, func=func, extra=extra, sinfo=sinfo, *args, **kwargs)
     def critical(self, msg:any = None, level=50, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else 'CRITICAL'
-        self.logging(msg=msg, level=level, title=title, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
+        self._log(msg=msg, level=level, title=title, exc_info=exc_info, func=func, extra=extra, sinfo=sinfo, *args, **kwargs)
     def notice(self, msg:any = None, level=25, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else 'NOTICE'
-        self.logging(msg=msg, level=level, title=title, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
+        self._log(msg=msg, level=level, title=title, exc_info=exc_info, func=func, extra=extra, sinfo=sinfo, *args, **kwargs)
     def issue(self, msg:any = None, level=60, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else 'ISSUE'
-        self.logging(msg=msg, level=level, title=title, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
+        self._log(msg=msg, level=level, title=title, exc_info=exc_info, func=func, extra=extra, sinfo=sinfo, *args, **kwargs)
     def matter(self, msg:any = None, level=70, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else '\x27O\x27 MATTER'
-        self.logging(msg=msg, level=level, title=title, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs)
+        self._log(msg=msg, level=level, title=title, exc_info=exc_info, func=func, extra=extra, sinfo=sinfo, *args, **kwargs)
     #========================================
     def __call__(self, msg:any = None, level=None, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
         level = level if level is not None else self.level
@@ -192,15 +264,6 @@ class logging(root, ansi):
         # e.g. -> {ansi.start}{ansi.fore_light_red};{ansi.text_on_bold}m->{ansi.reset}
         self.middle_structure = ""
         self.split            = " "
-    #========================================
-    # Override
-    def process(self, msg, **kwargs):
-        return (msg, kwargs)
-    def manager(self):
-        return
-    def _log(self, *args, **kwargs):
-        self.log(*args, **kwargs)
-    
     #========================================
     # Safe Update
     def safedate(self, src: dict, dest: dict) -> dict:
@@ -355,7 +418,7 @@ def getLogger(name=None, propagate=False, disabled=False, handlers=[], *args, **
     parent_name = ".".join(name.split(".")[:-1]) if "." in name else None
     parent = _logger_registry.get(parent_name) if parent_name else None
     # basicConfig
-    bconf = basicConfig()
+    bconf = basicConfig(handlers=handlers, *args, **kwargs)
     # Logger
     logger = logging(name=name, level=bconf["level"], propagate=False, parent=parent, disabled=False, handlers=bconf["handlers"], *args, **kwargs)
     _logger_registry[name] = logger
@@ -385,7 +448,7 @@ root = RootLogger()
 ######################################################################
 # Log Level Compatibility
 
-def debug(exc_info=True, *args, **kwargs):
+def debug(*args, **kwargs):
     root.debug(*args, **kwargs)
 def info(*args, **kwargs):
     root.info(*args, **kwargs)
@@ -404,7 +467,7 @@ def issue(*args, **kwargs):
 def matter(*args, **kwargs):
     root.matter(*args, **kwargs)
 def exception(*args, **kwargs):
-    root.exception(*args, exc_info=True, **kwargs)
+    root.exception(*args, **kwargs)
 
 ######################################################################
 # MAIN

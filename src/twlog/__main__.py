@@ -3,6 +3,8 @@
 ######################################################################
 # LIBS
 
+from rich.logging import RichHandler
+
 import twlog
 import twlog.util
 
@@ -31,6 +33,17 @@ if __name__ == "__main__":
     prism("prism", "prism")
 
     logger.info('This is test of change title', title='TEST')
+
+    # rich
+    bconf = twlog.basicConfig(
+        level    = twlog.NOTSET,
+        format   = "%(message)s",
+        datefmt  = "[%X]",
+        handlers = [RichHandler(markup=True, rich_tracebacks=True)]
+    )
+    richlog = twlog.getLogger("rich", handlers = [RichHandler(rich_tracebacks=True)])
+    richlog.info("This is test of rich")
+    richlog.test()
 
 #=====================================================================
 # ALL - Make it directly accessible from the top level of the package

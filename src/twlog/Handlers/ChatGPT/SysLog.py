@@ -17,8 +17,8 @@ class SyslogHandler(Handler):
         self.address = address
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     def emit(self, record):
-        message = self.format(record)
-        self.socket.sendto(message.encode("utf-8"), self.address)
+        record = self.format(record)
+        self.socket.sendto(record.message.encode("utf-8"), self.address)
 
 ######################################################################
 # MAIN

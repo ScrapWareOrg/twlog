@@ -6,29 +6,34 @@ import shutil
 ######################################################################
 # LIBS
 
+from twlog.util.ANSIColor import ansi, ansilen, strlen
 from twlog.util.Code import *
 from twlog.Handlers import Handler
+from twlog.Formatters import Formatter
+from twlog.Formatters.Rich import RichFormatter
 
 ######################################################################
 # Classes - handlers
 
-class StreamHandler(Handler):
+class RichHandler(Handler):
     # Initialization
-    def __init__(self, level=INFO, stream=sys.stdout, stream_err=sys.stderr) -> None:
-        super(StreamHandler, self).__init__(level=level)
+    def __init__(self, level=INFO, stream=sys.stdout, stream_err=sys.stderr, markup=True, rich_tracebacks=True) -> None:
+        super(RichHandler, self).__init__(level=level)
         self.stream = stream if stream is not None else sys.stdout
         self.stream_err = stream_err if stream_err is not None else sys.stderr
+        self.markup = True if markup is True else False
+        self.rich_tracebacks = True if rich_tracebacks is True else False
         self.terminator = '\n'
     def emit(self, record):
         # Format
         record = self.format(record)
         # Initialize
         mf = record.message
-        ml = len(mf)
+        ml = strlen(mf)
         # filename and lineno
         if record.level >= 30:
-            fl = f" ({record.filename}:{record.lineno})"
-            ml += len(fl)
+            fl = f"{ansi.start}{ansi.fore_white}m{record.filename}:{record.lineno}{ansi.reset}"
+            ml += strlen(fl)
             ts = shutil.get_terminal_size().columns
             df = ts - ml
             if df > 0: mf += (" " * df)
@@ -37,7 +42,6 @@ class StreamHandler(Handler):
         # ^^;
         else:
             print(mf, file=self.stream)
-    # Testing
     def flush(self):
         return True
     def setStrteam(self, stream):
@@ -51,7 +55,7 @@ if __name__ == "__main__":
 
 #=====================================================================
 # ALL - Make it directly accessible from the top level of the package
-__all__ = ["StreamHandler"]
+__all__ = ["RichHandler"]
 
 """ __DATA__
 

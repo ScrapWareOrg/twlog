@@ -62,7 +62,7 @@ class ansi:
 
 # ANSI Counter
 def ansilen(msg):
-   mall = re.findall("\x1b\[[0-9;]+m", msg)
+   mall = re.findall("\x1b\[[0-9;]*m", msg)
    if mall is None:
        return 0
    mstr = ''.join(mall)

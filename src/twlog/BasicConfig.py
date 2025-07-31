@@ -1,7 +1,6 @@
 #!/home/twinkle/venv/bin/python
 
 import sys
-
 import threading
 
 ######################################################################
@@ -12,8 +11,10 @@ from twlog.util.Code import *
 from twlog.Filters import Filter
 from twlog.Formatters import Formatter
 from twlog.Formatters.ANSI import ANSIFormatter
+from twlog.Formatters.Rich import RichFormatter
 from twlog.Handlers import Handler
 from twlog.Handlers.ANSI import ANSIHandler
+from twlog.Handlers.Rich import RichHandler
 from twlog.Handlers.File import FileHandler, BufferedFileHandler
 from twlog.Handlers.Stream import StreamHandler
 from twlog.Handlers.ChatGPT.SysLog import SyslogHandler
@@ -47,13 +48,26 @@ def basicConfig_true():
 ######################################################################
 # CODE
 
-_basicConfig["handlers_ansi"] = [ANSIHandler(level=INFO, stream=sys.stdout, stream_err=sys.stderr, markup=True, rich_tracebacks=True)]
-_basicConfig["formatter_ansi"] = ANSIFormatter(fmt=_basicConfig["fmt"], datefmt=_basicConfig["datefmt"], markup=True, rich_tracebacks=True)
-_basicConfig["handlers"] = [StreamHandler(level=INFO, stream=sys.stdout, stream_err=sys.stderr)]
-_basicConfig["formatter"] = Formatter(fmt=_basicConfig["fmt"], datefmt=_basicConfig["datefmt"])
+# Filters
 _basicConfig["filter"] =  Filter()
-for h in range(len(_basicConfig["handlers"])):
-    _basicConfig["handlers"][h].setFormatter(_basicConfig["formatter"])
+
+# ANSI
+_basicConfig["formatter_ansi"] = ANSIFormatter(fmt=_basicConfig["fmt"], datefmt=_basicConfig["datefmt"], markup=True, rich_tracebacks=True)
+_basicConfig["handlers_ansi"] = [ANSIHandler(level=INFO, stream=sys.stdout, stream_err=sys.stderr, markup=True, rich_tracebacks=True)]
+_basicConfig["handlers_ansi"][0].setFormatter(_basicConfig["formatter_ansi"])
+_basicConfig["handlers_ansi"][0].addFilter(_basicConfig["filter"])
+
+# Rich
+_basicConfig["formatter_rich"] = RichFormatter(fmt=_basicConfig["fmt"], datefmt=_basicConfig["datefmt"], markup=True, rich_tracebacks=True)
+_basicConfig["handlers_rich"] = [RichHandler(level=INFO, stream=sys.stdout, stream_err=sys.stderr, markup=True, rich_tracebacks=True)]
+_basicConfig["handlers_rich"][0].setFormatter(_basicConfig["formatter_rich"])
+_basicConfig["handlers_rich"][0].addFilter(_basicConfig["filter"])
+
+# Basic Stream
+_basicConfig["formatter"] = Formatter(fmt=_basicConfig["fmt"], datefmt=_basicConfig["datefmt"])
+_basicConfig["handlers"] = [StreamHandler(level=INFO, stream=sys.stdout, stream_err=sys.stderr)]
+_basicConfig["handlers"][0].setFormatter(_basicConfig["formatter"])
+_basicConfig["handlers"][0].addFilter(_basicConfig["filter"])
 
 # Basic Configuration
 def basicConfig(filename=None, filemode='a', format: str = _basicConfig["fmt"], datefmt: str = "[%Y-%m-%d %H:%M:%S]", style: str = '%', level:int = INFO, stream=None, handlers: list = None, force=False, encoding=None, errors=None):
@@ -65,20 +79,12 @@ def basicConfig(filename=None, filemode='a', format: str = _basicConfig["fmt"], 
         if filename is not None:
             _basicConfig["handlers"] = [FileHandler(level=INFO, filename=filename, mode=filemode, encoding=encoding, delay=False, errors=errors)]
             _basicConfig["handlers"][0].setFormatter(_basicConfig["formatter"])
+            _basicConfig["handlers"][0].addFilter(_basicConfig["filter"])
         else:
             stream = stream if stream is not None else sys.stdout
             _basicConfig["handlers"] = _basicConfig["handlers_ansi"]
-            _basicConfig["handlers"][0].setFormatter(_basicConfig["formatter_ansi"])
-            #_basicConfig["handlers"] = _basicConfig["handlers"]
-            #_basicConfig["handlers"][0].setFormatter(_basicConfig["formatter"])
-            _basicConfig["handlers"][0].addFilter(_basicConfig["filter"])
     else:
         _basicConfig["handlers"] = handlers
-    # Formatter
-    _basicConfig["formatter"] = Formatter(fmt=_basicConfig["fmt"], datefmt=_basicConfig["datefmt"])
-    for h in range(len(_basicConfig["handlers"])):
-        if _basicConfig["handlers"][h].formatter is None:
-            _basicConfig["handlers"][h].setFormatter(_basicConfig["formatter"])
     # ^^;
     return _basicConfig.copy()
 

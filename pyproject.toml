@@ -7,7 +7,7 @@ where = ["src/"]
 
 [project]
 name = "twlog"
-version = "0.52.0"
+version = "0.60.0"
 authors = [
   { name="Twinkle Computing", email="twinkle@twinkle.work" },
 ]

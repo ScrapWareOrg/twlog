@@ -62,6 +62,7 @@ Impremented Features.
 ### Handlers
  * **NullHandler**: Null handler.
  * **ANSIHandler(*Defaults*)**: sys.stdout, coloring with ANSI code
+ * **RichHandler(*Defaults*)**: sys.stdout, coloring with ANSI code(rich Like)
  * **StreamHandler**: sys.stdin, sys.stderr
  * **FileHandler**: filehandle
  * **BufferedFileHandler**: filehandle, write on last(destruction).
@@ -71,6 +72,7 @@ Impremented Features.
 ### Compatible Imprements (*Yet Another*)
  * **Formatter**: Default Formatter.
  * **ANSIFormatter**: ANSI Formatter (Colorful, Use on ANSIHandler)
+ * **RichFormatter**: Rich Formatter (Colorful, Use on RichHandler)
 
 ### Compatible Imprements (*Yet Another*)
  * **Filter**: Empty template yet, Working from now on...? (or appending yourself)

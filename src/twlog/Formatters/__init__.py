@@ -20,31 +20,37 @@ strf_styles = ['%', '$', '{']
 class Formatter():
     def __init__(self, fmt="%(message)s", datefmt="[%Y-%m-%d %H:%M:%S]", style='%', validate=True, *, defaults=None) -> None:
         super(Formatter, self).__init__()
+        # Escape
+        #datefmt = datefmt.replace('[', '\x5b')
+        #datefmt = datefmt.replace(']', '\x5d')
         # Formats
         self.datefmt = str(datefmt) if datefmt is not None else "[%Y-%m-%d %H:%M:%S]"
         self.fmt = str(fmt) if fmt is not None else "%(message)s"
         self.style = str(style) if style is not None and style in strf_styles else "%"
+        # FFF
     def formatMessage(self, record):
-        record["message"] = record.getMessage()
+        record.message = record.getMessage()
         temp = str(self.fmt)
+        rdic = record.__dict__
+        rkey = rdic.keys()
         if self.style == '$':
-            for key in record.keys():
-                temp = self.fmt.replace(f"$\x7bkey\x7ds", "{record[key]}")
+            for key in rkey:
+                temp = temp.replace(f"$\x7bkey\x7d", f"{rdic[key]}")
         elif self.style == '{':
             temp = f"{temp}"
         else:
-            for key in record.keys():
-                temp = temp.replace(f"%({key})s", f"{record[key]}")
-        record["message"] = temp
+            for key in rkey:
+                temp = temp.replace(f"%({key})s", f"{rdic[key]}")
+        record.message = temp
     # datetime
     def fomatTime(self, record, datefmt=None):
         dt = datetime.now()
-        record["asctime"] = dt.strftime(datefmt)
-        return record["asctime"]
+        record.asctime = dt.strftime(datefmt)
+        return record.asctime
     def formatException(self, exc_info):
         return True
     def formatStack(self, stack_info):
-        return traceback.extract_stack(f=inspect.stack(), limit=1)
+        return stack_info
     def formatHeader(self, records):
         return records
     def formatFooter(self, records):
