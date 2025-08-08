@@ -24,7 +24,7 @@ import twlog.util
 
 from twlog.util import psolo, popts, priny, pixie, prain, paint, plume, prank, prown, pinok, peach, prism
 from twlog.util.ANSIColor import ansi
-from twlog.util.Code import *
+from twlog.Code import *
 from twlog.BasicConfig import basicConfig, basicConfig_lock, basicConfig_done, basicConfig_true
 from twlog.Filters import Filter
 from twlog.Formatters import Formatter
@@ -43,14 +43,14 @@ _logger_registry = {}
 
 class root():
     # Initialization
-    def __init__(self, level=INFO, propagate=False, parent=None, disabled=False, handlers=[], *args, **kwargs) -> None:
+    def __init__(self, level=DEBUG, propagate=False, parent=None, disabled=False, handlers=[], *args, **kwargs) -> None:
         # Arguments
         self._args = args
         self._kwargs = kwargs
         # Name
         self.name = 'root'
         # Log Level
-        self.level = level if level is not None and level in LOG_LEVEL else INFO
+        self.level = level if level is not None and level in LOG_LEVEL else DEBUG
         # Handlers
         self.handlers = handlers
         # Current
@@ -60,21 +60,27 @@ class root():
     # Root Fuynctions
     def isEnabledFor(self, level):
         return False if self.disabled is False or self.level < level else True
-    def setlevel(self, level):
-        self.level = level if level is not None and level in LOG_LEVEL else self.level
+    def setLevel(self, level):
+        self.level = level if level is not None and level in LOG_LEVEL else 10
+        for h in range(len(self.handlers)):
+            self.handlers[h].setLevel(self.level);
+        ch = self.getChildren()
+        for n in range(len(ch)):
+            if n in _logger_registry:
+                ch[n].setLevel(self.level)
         return self.level
     def getEffectiveLevel(self):
         return self.level
     def getChild(self, suffix):
         ret = []
         for key in _logger_registry.keys():
-            if key != suffix and re.search(_logger_registry[key], suffix):
+            if key != suffix and re.search(key, suffix):
                 ret.append(key)
         return ret
     def getChildren(self):
         ret = []
         for key in _logger_registry.keys():
-            if key != self.name and re.search(_logger_registry[key], self.name):
+            if key != self.name and re.search(key, self.name):
                 ret.append(key)
         return ret
     def setHandler(self, hdlr):
@@ -144,6 +150,12 @@ class root():
     def manager(self):
         return
     #========================================
+    ## Not yet
+    def addCode(self, level, code, callback=None):
+        twilog.Code.addCode(level, code)
+    def removeCode(self, level, code, callback=None):
+        twilog.Code.addCode(level, code)
+    #========================================
     # Array Disaddembly
     def msg_disassembly(self, msg):
         if hasattr(msg, 'tolist'):
@@ -156,6 +168,7 @@ class root():
         return msg
     # Promise for Console
     def _log(self, msg:any = None, level: int = 20, title: str = None, exc_info=False, func=None, extra=None, sinfo=False, *args, **kwargs):
+        if level < self.level: return
         # Title Setting
         title = str(title) if title is not None else self.name.upper()
         level = level if level is not None else self.level
@@ -201,13 +214,13 @@ class root():
     def critical(self, msg:any = None, level=50, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else 'CRITICAL'
         self._log(msg=msg, level=level, title=title, exc_info=exc_info, func=func, extra=extra, sinfo=sinfo, *args, **kwargs)
-    def notice(self, msg:any = None, level=25, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
+    def notice(self, msg:any = None, level=60, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else 'NOTICE'
         self._log(msg=msg, level=level, title=title, exc_info=exc_info, func=func, extra=extra, sinfo=sinfo, *args, **kwargs)
-    def issue(self, msg:any = None, level=60, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
+    def issue(self, msg:any = None, level=70, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else 'ISSUE'
         self._log(msg=msg, level=level, title=title, exc_info=exc_info, func=func, extra=extra, sinfo=sinfo, *args, **kwargs)
-    def matter(self, msg:any = None, level=70, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
+    def matter(self, msg:any = None, level=80, title=None, exc_info=False, func=None, extra=None, sinfo=None, *args, **kwargs):
         title = title if title is not None else '\x27O\x27 MATTER'
         self._log(msg=msg, level=level, title=title, exc_info=exc_info, func=func, extra=extra, sinfo=sinfo, *args, **kwargs)
     #========================================
@@ -409,8 +422,9 @@ def RootLogger(*args, force=False, **kwargs):
         if basicConfig_done() and not force:
             return
         basicConfig(*args, **kwargs)
-        root = getLogger("__main__")
+        rlog = getLogger("__main__")
         basicConfig_true()
+        return rlog
 
 ######################################################################
 # getLogger

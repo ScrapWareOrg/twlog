@@ -3,7 +3,7 @@
 ######################################################################
 # LIBS
 
-from twlog.util.Code import *
+from twlog.Code import *
 from twlog.Formatters import Formatter
 
 ######################################################################
@@ -25,7 +25,7 @@ class Handler():
         return True
     # Level
     def setLevel(self, level: int = 0):
-        self.level = level if level in LOG_LEVEL else self.INFO
+        self.level = level if level in LOG_LEVEL else 10
     # Formatter
     def setFormatter(self, fmt: Formatter = None):
         self.formatter = fmt if fmt is not None else None

@@ -7,7 +7,7 @@ import threading
 # LIBS
 
 from twlog.util.ANSIColor import ansi
-from twlog.util.Code import *
+from twlog.Code import *
 from twlog.Filters import Filter
 from twlog.Formatters import Formatter
 from twlog.Formatters.ANSI import ANSIFormatter
@@ -51,6 +51,12 @@ def basicConfig_true():
 # Filters
 _basicConfig["filter"] =  Filter()
 
+# Basic Stream
+_basicConfig["formatter"] = Formatter(fmt=_basicConfig["fmt"], datefmt=_basicConfig["datefmt"])
+_basicConfig["handlers"] = [StreamHandler(level=INFO, stream=sys.stdout, stream_err=sys.stderr)]
+_basicConfig["handlers"][0].setFormatter(_basicConfig["formatter"])
+_basicConfig["handlers"][0].addFilter(_basicConfig["filter"])
+
 # ANSI
 _basicConfig["formatter_ansi"] = ANSIFormatter(fmt=_basicConfig["fmt"], datefmt=_basicConfig["datefmt"], markup=True, rich_tracebacks=True)
 _basicConfig["handlers_ansi"] = [ANSIHandler(level=INFO, stream=sys.stdout, stream_err=sys.stderr, markup=True, rich_tracebacks=True)]
@@ -62,12 +68,6 @@ _basicConfig["formatter_rich"] = RichFormatter(fmt=_basicConfig["fmt"], datefmt=
 _basicConfig["handlers_rich"] = [RichHandler(level=INFO, stream=sys.stdout, stream_err=sys.stderr, markup=True, rich_tracebacks=True)]
 _basicConfig["handlers_rich"][0].setFormatter(_basicConfig["formatter_rich"])
 _basicConfig["handlers_rich"][0].addFilter(_basicConfig["filter"])
-
-# Basic Stream
-_basicConfig["formatter"] = Formatter(fmt=_basicConfig["fmt"], datefmt=_basicConfig["datefmt"])
-_basicConfig["handlers"] = [StreamHandler(level=INFO, stream=sys.stdout, stream_err=sys.stderr)]
-_basicConfig["handlers"][0].setFormatter(_basicConfig["formatter"])
-_basicConfig["handlers"][0].addFilter(_basicConfig["filter"])
 
 # Basic Configuration
 def basicConfig(filename=None, filemode='a', format: str = _basicConfig["fmt"], datefmt: str = "[%Y-%m-%d %H:%M:%S]", style: str = '%', level:int = INFO, stream=None, handlers: list = None, force=False, encoding=None, errors=None):

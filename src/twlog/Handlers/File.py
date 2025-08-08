@@ -3,12 +3,14 @@
 import os
 import sys
 
+import shutil
+
 import locale
 
 ######################################################################
 # LIBS
 
-from twlog.util.Code import *
+from twlog.Code import *
 from twlog.Handlers import Handler
 
 ######################################################################
@@ -16,25 +18,29 @@ from twlog.Handlers import Handler
 
 class FileHandler(Handler):
     # Initialization
-    def __init__(self, level=INFO, filename=None, mode='a', encoding=None, delay=False, errors=None) -> None:
+    def __init__(self, level=INFO, filename=None, mode='a', encoding=None, delay=True, errors=None) -> None:
         super(FileHandler, self).__init__(level=level)
+        self.level = level if level is not None and level in LOG_LEVEL else DEBUG
         self.filename = str(filename) if filename is not None else 'sys.stdout'
         self.mode = str(mode) if mode is not None else 'a'
-        self.encoding = str(encoding) if encoding is not None else locale.getpreferrerdencoding()
+        self.encoding = str(encoding) if encoding is not None else locale.getpreferredencoding()
         self.delay = bool(delay) if delay is not None else False
         self.errors = str(errors) if errors is not None else None
         if self.filename == 'sys.stdout':
             self.f = sys.stdout
-        elif delay is False:
+        elif self.filename == 'sys.stderr':
+            self.f = sys.stderr
+        elif self.delay is False:
             self.f = open(self.filename, mode=self.mode, encoding=self.encoding, buffering=self.delay, errors=self.errors)
         else:
             self.f = None
     def emit(self, record):
+        if record.level < self.level: return
         # Format
         record = self.format(record)
         # ^^;
-        if delay is True:
-            with open(self.filename, mode=self.mode, encoding=self.encoding, buffering=self.delay, errors=self.errors):
+        if (self.filename != 'sys.stdout' and self.filename != 'sys.stderr') and (self.f is None or self.delay is True):
+            with open(self.filename, mode=self.mode, encoding=self.encoding, buffering=self.delay, errors=self.errors) as self.f:
                 print(record.message, file=self.f)
         # ^^;
         else:
@@ -43,35 +49,47 @@ class FileHandler(Handler):
         if delay is False:
             self.f.flush()
     def close(self):
-        if self.filename != 'sys.stdout' and delay is False:
+        if (self.filename != 'sys.stdout' and self.filename != 'sys.stderr') and self.f is None:
             close(self.f)
 
 class BufferedFileHandler(Handler):
     # Initialization
-    def __init__(self, level=INFO, filename=None, mode='a', encoding=None, delay=False, errors=None) -> None:
-        super(FileHandler, self).__init__(level=level)
+    def __init__(self, level=INFO, filename=None, mode='a', encoding=None, delay=True, errors=None) -> None:
+        super(BufferedFileHandler, self).__init__(level=level)
+        self.level = level if level is not None and level in LOG_LEVEL else DEBUG
         self.filename = str(filename) if filename is not None else 'sys.stdout'
         self.mode = str(mode) if mode is not None else 'a'
-        self.encoding = str(encoding) if encoding is not None else locale.getpreferrerdencoding()
+        self.encoding = str(encoding) if encoding is not None else locale.getpreferredencoding()
         self.delay = bool(delay) if delay is not None else False
         self.errors = str(errors) if errors is not None else None
+        # __builtins__.open
+        self._open = open
+        self._prnt = print
+        self._stdo = sys.stdout
+        self._stde = sys.stderr
         # Binder
         self.binder = []
         # Stdout?
         if self.filename == 'sys.stdout':
-            self.f = sys.stdout
+            self.f = self._stdo
+        elif self.filename == 'sys.stderr':
+            self.f = self._stde
         else:
             self.f = None
     def getBinder(self):
         return self.binder.copy()
     def emit(self, record):
+        if record.level < self.level: return
         # Format
         record = self.format(record)
         # ^^;
-        self.binder.appends(record.message + "\n")
+        self.binder.append(record.message + "\n")
     def flush(self):
-        with open(self.filename, mode=self.mode, encoding=self.encoding, buffering=False, errors=self.errors):
-            print(self.binder, file=self.f)
+        if (self.filename != 'sys.stdout' and self.filename != 'sys.stderr') and self.f is None:
+            with self._open(self.filename, mode=self.mode, encoding=self.encoding, buffering=self.delay, errors=self.errors) as self.f:
+                for i in self.binder: print(self.binder[i], file=self.f)
+        else:
+            for i in self.binder: print(i[0:-2], file=self.f)
         self.binder.clear()
     def __del__(self):
         self.flush()

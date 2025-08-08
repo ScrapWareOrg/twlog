@@ -5,7 +5,7 @@ import socket
 ######################################################################
 # LIBS
 
-from twlog.util.Code import *
+from twlog.Code import *
 from twlog.Handlers import Handler
 
 ######################################################################

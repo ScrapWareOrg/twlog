@@ -2,10 +2,12 @@
 
 import sys
 
+import shutil
+
 ######################################################################
 # LIBS
 
-from twlog.util.Code import *
+from twlog.Code import *
 from twlog.Handlers import Handler
 
 ######################################################################
@@ -15,10 +17,12 @@ class StreamHandler(Handler):
     # Initialization
     def __init__(self, level=INFO, stream=sys.stdout, stream_err=sys.stderr) -> None:
         super(StreamHandler, self).__init__(level=level)
+        self.level = level if level is not None and level in LOG_LEVEL else DEBUG
         self.stream = stream if stream is not None else sys.stdout
         self.stream_err = stream_err if stream_err is not None else sys.stderr
         self.terminator = '\n'
     def emit(self, record):
+        if record.level < self.level: return
         # Format
         record = self.format(record)
         # ^^;

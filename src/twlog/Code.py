@@ -44,6 +44,27 @@ MATTER   = 80
 ######################################################################
 # Module Functions
 
+def addCode(level:int=89, code="NULL"):
+    if level < 90 or code is None or code in LOG_LEVEL or code in __dict__:
+        return False
+    else:
+        LOG_LEVEL[code] = level
+        LEVEL_LOG[level] = code
+        __dict__[code] = level
+        return True
+
+def removeCode(level:int=89, code="NULL"):
+    if level < 90 or code is None or code not in LOG_LEVEL or code not in __dict__:
+        return False
+    else:
+        LOG_LEVEL.pop([code])
+        LEVEL_LOG.pop([level])
+        __dict__.pop([code])
+        return True
+
+######################################################################
+# Module Functions
+
 def _get_caller_class_name():
     import inspect
     caller_frame = inspect.currentframe().f_back
